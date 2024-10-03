@@ -16323,6 +16323,33 @@
       "type": "object",
       "typeInfo": "Enum"
     },
+    "core::option::Option<bevy_ecs::entity::Entity>": {
+      "isComponent": false,
+      "isResource": false,
+      "long_name": "core::option::Option<bevy_ecs::entity::Entity>",
+      "oneOf": [
+        {
+          "long_name": "None"
+        },
+        {
+          "items": false,
+          "long_name": "Some",
+          "prefixItems": [
+            {
+              "type": {
+                "$ref": "#/$defs/bevy_ecs::entity::Entity"
+              }
+            }
+          ],
+          "short_name": "Some",
+          "type": "array",
+          "typeInfo": "Tuple"
+        }
+      ],
+      "short_name": "Option<Entity>",
+      "type": "object",
+      "typeInfo": "Enum"
+    },
     "core::option::Option<bevy_input::touch::ForceTouch>": {
       "isComponent": false,
       "isResource": false,
@@ -16806,6 +16833,33 @@
         }
       ],
       "short_name": "Option<NodeIndex>",
+      "type": "object",
+      "typeInfo": "Enum"
+    },
+    "core::option::Option<usize>": {
+      "isComponent": false,
+      "isResource": false,
+      "long_name": "core::option::Option<usize>",
+      "oneOf": [
+        {
+          "long_name": "None"
+        },
+        {
+          "items": false,
+          "long_name": "Some",
+          "prefixItems": [
+            {
+              "type": {
+                "$ref": "#/$defs/usize"
+              }
+            }
+          ],
+          "short_name": "Some",
+          "type": "array",
+          "typeInfo": "Tuple"
+        }
+      ],
+      "short_name": "Option<usize>",
       "type": "object",
       "typeInfo": "Enum"
     },
@@ -17360,6 +17414,59 @@
       "short_name": "NodeIndex",
       "type": "object",
       "typeInfo": "Value"
+    },
+    "sickle_ui::widgets::layout::tab_container::Tab": {
+      "additionalProperties": false,
+      "isComponent": true,
+      "isResource": false,
+      "long_name": "sickle_ui::widgets::layout::tab_container::Tab",
+      "properties": {
+        "bar": {
+          "type": {
+            "$ref": "#/$defs/bevy_ecs::entity::Entity"
+          }
+        },
+        "container": {
+          "type": {
+            "$ref": "#/$defs/bevy_ecs::entity::Entity"
+          }
+        },
+        "label": {
+          "type": {
+            "$ref": "#/$defs/bevy_ecs::entity::Entity"
+          }
+        },
+        "label_container": {
+          "type": {
+            "$ref": "#/$defs/bevy_ecs::entity::Entity"
+          }
+        },
+        "original_index": {
+          "type": {
+            "$ref": "#/$defs/core::option::Option<usize>"
+          }
+        },
+        "panel": {
+          "type": {
+            "$ref": "#/$defs/bevy_ecs::entity::Entity"
+          }
+        },
+        "placeholder": {
+          "type": {
+            "$ref": "#/$defs/core::option::Option<bevy_ecs::entity::Entity>"
+          }
+        }
+      },
+      "required": [
+        "container",
+        "bar",
+        "panel",
+        "label_container",
+        "label"
+      ],
+      "short_name": "Tab",
+      "type": "object",
+      "typeInfo": "Struct"
     },
     "smallvec::SmallVec<[bevy_ecs::entity::Entity; 8]>": {
       "isComponent": false,

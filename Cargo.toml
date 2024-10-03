@@ -5,7 +5,28 @@ edition = "2021"
 
 [dependencies]
 avian3d = "^0.1.2"
-bevy = { version = "^0.14.0", features = ["dynamic_linking"] }
+bevy = { version = "^0.14.0", default-features = false, features = [
+  "dynamic_linking",
+  "bevy_state",
+  "bevy_asset",
+  "bevy_color",
+  "bevy_pbr",
+  "bevy_scene",
+  "x11",
+  "tonemapping_luts",
+
+  # Core
+  "bevy_core_pipeline",
+  "multi_threaded",
+  "bevy_winit",
+  "bevy_audio",
+  "bevy_sprite",
+  "bevy_text",
+
+  # Core formats
+  "vorbis",
+  "png",
+] }
 # glam = { version = "^0.27.0", features = ["glam-assert"] }
 bevy_flycam = "^0.14.1"
 blenvy = { git = "https://github.com/kaosat-dev/Blenvy/", branch = "blenvy", version = "^0.1.0-alpha.1" }
@@ -14,6 +35,7 @@ log = "^0.4.22"
 bevy-inspector-egui = "^0.25.1"
 bevy_third_person_camera = "0.1.11"
 bevy-avian-baseball-flight = "0.0.1-alpha.1"
+sickle_ui = "0.2.1"
 
 [profile.dev]
 opt-level = 1
