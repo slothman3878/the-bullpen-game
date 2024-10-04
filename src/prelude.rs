@@ -12,8 +12,7 @@ pub(crate) use bevy::{
     window::*,
 };
 pub(crate) use bevy_rapier3d::prelude::*;
-pub(crate) use bevy_rapier_baseball_flight::prelude::*;
+pub(crate) use bevy_rapier_baseball_flight::{prelude::*, AeroActivationSet};
 pub(crate) use blenvy::*;
-pub(crate) use sickle_ui::{prelude::*, SickleUiPlugin};
 
 pub(crate) use bevy_flycam::{FlyCam, NoCameraPlayerPlugin};

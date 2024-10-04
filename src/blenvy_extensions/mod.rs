@@ -11,6 +11,10 @@ impl Plugin for BlenvyExtensions {
                 (add_colliders).in_set(GltfBlueprintsSet::AfterSpawn),
             );
     }
+
+    fn cleanup(&self, _app: &mut App) {
+        // TODO:
+    }
 }
 
 #[derive(Debug, Component, Clone, Reflect)]
