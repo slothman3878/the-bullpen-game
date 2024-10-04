@@ -1,3 +1,5 @@
+pub(crate) mod blenvy_extensions;
+
 use bevy::{
     diagnostic::LogDiagnosticsPlugin, input::common_conditions::input_just_released, math::DVec3,
     prelude::*, window::*,
@@ -27,6 +29,9 @@ fn main() {
         }),
         ..Default::default()
     }));
+
+    app.register_type::<BlueprintRapierTriMeshComponent>();
+
     app.insert_resource(Time::<Fixed>::from_hz(60.0));
 
     let mut rapier_config = RapierConfiguration::new(1.);
@@ -45,6 +50,11 @@ fn main() {
 
     app.add_plugins(SickleUiPlugin);
     app.add_plugins(BlenvyPlugin::default());
+    app.add_systems(
+        Update,
+        (add_colliders).in_set(GltfBlueprintsSet::AfterSpawn),
+    );
+
     app.add_plugins(NoCameraPlayerPlugin);
     app.add_plugins(BaseballFlightPlugin {
         ssw_on: true,
@@ -210,22 +220,4 @@ fn setup_scene(mut commands: Commands) {
         HideUntilReady,
         GameWorldTag,
     ));
-}
-
-fn add_colliders(
-    mut commands: Commands,
-    scene_meshes: Query<(Entity, &Name, &Handle<Mesh>), Added<Name>>,
-    mut meshes: ResMut<Assets<Mesh>>,
-) {
-    // iterate over all meshes in the scene and match them by their name.
-    for (entity, name, mesh_handle) in scene_meshes.iter() {
-        // "LetterA" would be the name of the Letter object in Blender.
-        if name.to_string() == "LetterA" {
-            let mesh = meshes.get(mesh_handle).unwrap();
-            // Create the collider from the mesh.
-            let collider = Collider::from_bevy_mesh(mesh, &ComputedColliderShape::TriMesh).unwrap();
-            // Attach collider to the entity of this same object.
-            commands.entity(entity).insert(collider);
-        }
-    }
 }
