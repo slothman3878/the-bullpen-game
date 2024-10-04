@@ -1,14 +1,7 @@
-pub(crate) mod blenvy_extensions;
+mod blenvy_extensions;
+mod prelude;
 
-use bevy::{
-    diagnostic::LogDiagnosticsPlugin, input::common_conditions::input_just_released, math::DVec3,
-    prelude::*, window::*,
-};
-use bevy_flycam::{FlyCam, NoCameraPlayerPlugin};
-use bevy_rapier3d::prelude::*;
-use bevy_rapier_baseball_flight::prelude::*;
-use blenvy::*;
-use sickle_ui::{prelude::*, SickleUiPlugin};
+use crate::prelude::*;
 
 const WINDOW_WIDTH: f32 = 1920.0;
 const WINDOW_HEIGHT: f32 = 1024.0;
@@ -30,8 +23,6 @@ fn main() {
         ..Default::default()
     }));
 
-    app.register_type::<BlueprintRapierTriMeshComponent>();
-
     app.insert_resource(Time::<Fixed>::from_hz(60.0));
 
     let mut rapier_config = RapierConfiguration::new(1.);
@@ -49,11 +40,7 @@ fn main() {
     }
 
     app.add_plugins(SickleUiPlugin);
-    app.add_plugins(BlenvyPlugin::default());
-    app.add_systems(
-        Update,
-        (add_colliders).in_set(GltfBlueprintsSet::AfterSpawn),
-    );
+    app.add_plugins((BlenvyPlugin::default(), BlenvyExtensions));
 
     app.add_plugins(NoCameraPlayerPlugin);
     app.add_plugins(BaseballFlightPlugin {

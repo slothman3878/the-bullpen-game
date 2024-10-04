@@ -1,8 +1,23 @@
+use crate::prelude::*;
+
+#[derive(Debug)]
+pub struct BlenvyExtensions;
+
+impl Plugin for BlenvyExtensions {
+    fn build(&self, app: &mut App) {
+        app.register_type::<BlueprintRapierTriMeshComponent>()
+            .add_systems(
+                Update,
+                (add_colliders).in_set(GltfBlueprintsSet::AfterSpawn),
+            );
+    }
+}
+
 #[derive(Debug, Component, Clone, Reflect)]
 #[reflect(Component)]
 pub struct BlueprintRapierTriMeshComponent;
 
-pub fn add_colliders(
+fn add_colliders(
     mut commands: Commands,
     scene_meshes: Query<(Entity, &BlueprintRapierTriMeshComponent, &Handle<Mesh>), Added<Name>>,
     meshes: ResMut<Assets<Mesh>>,
