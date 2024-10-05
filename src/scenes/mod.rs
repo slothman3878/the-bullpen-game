@@ -3,7 +3,7 @@ extern crate proc_macro;
 pub(crate) mod bullpen;
 
 pub(crate) mod prelude {
-    pub(crate) use super::bullpen::*;
+    pub(crate) use super::bullpen::prelude::*;
     pub(crate) use super::*;
 }
 

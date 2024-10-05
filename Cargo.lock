@@ -1347,6 +1347,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "blenvy-extensions"
+version = "0.0.1"
+dependencies = [
+ "bevy",
+ "bevy_rapier3d",
+ "blenvy",
+]
+
+[[package]]
 name = "block"
 version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4014,6 +4023,7 @@ dependencies = [
  "bevy_rapier3d",
  "bevy_third_person_camera",
  "blenvy",
+ "blenvy-extensions",
  "leafwing-input-manager",
  "log",
 ]

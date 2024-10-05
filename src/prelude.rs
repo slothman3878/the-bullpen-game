@@ -1,5 +1,5 @@
 #![allow(unused_imports)]
-pub(crate) use crate::blenvy_extensions::*;
+pub(crate) use blenvy_extensions::*;
 
 pub(crate) use bevy::{
     diagnostic::LogDiagnosticsPlugin,

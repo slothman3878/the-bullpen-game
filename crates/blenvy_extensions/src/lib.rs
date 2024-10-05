@@ -1,4 +1,6 @@
-use crate::prelude::*;
+use bevy::prelude::*;
+use bevy_rapier3d::prelude::*;
+use blenvy::*;
 
 #[derive(Debug)]
 pub struct BlenvyExtensions;

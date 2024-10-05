@@ -13341,6 +13341,17 @@
       "type": "object",
       "typeInfo": "Struct"
     },
+    "blenvy_extensions::BlueprintRapierTriMeshComponent": {
+      "additionalProperties": false,
+      "isComponent": true,
+      "isResource": false,
+      "long_name": "blenvy_extensions::BlueprintRapierTriMeshComponent",
+      "properties": {},
+      "required": [],
+      "short_name": "BlueprintRapierTriMeshComponent",
+      "type": "object",
+      "typeInfo": "Struct"
+    },
     "bool": {
       "isComponent": false,
       "isResource": false,
@@ -15108,17 +15119,6 @@
       "short_name": "Arc<StrongHandle>",
       "type": "object",
       "typeInfo": "Value"
-    },
-    "the_bullpen_game::blenvy_extensions::BlueprintRapierTriMeshComponent": {
-      "additionalProperties": false,
-      "isComponent": true,
-      "isResource": false,
-      "long_name": "the_bullpen_game::blenvy_extensions::BlueprintRapierTriMeshComponent",
-      "properties": {},
-      "required": [],
-      "short_name": "BlueprintRapierTriMeshComponent",
-      "type": "object",
-      "typeInfo": "Struct"
     },
     "the_bullpen_game::scenes::GameSceneMarker<the_bullpen_game::scenes::bullpen::BullpenScene>": {
       "isComponent": true,
