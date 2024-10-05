@@ -1,64 +1,50 @@
+extern crate proc_macro;
+
 pub(crate) mod bullpen;
 
 pub(crate) mod prelude {
-    pub(crate) use super::bullpen;
+    pub(crate) use super::bullpen::*;
+    pub(crate) use super::*;
 }
 
 use crate::prelude::*;
 
-#[derive(Debug, Default, Hash, Eq, PartialEq, Clone, Copy, Reflect)]
-pub(crate) enum GameScene {
-    #[default]
-    MainMenu,
-    Bullpen,
+use std::fmt::Debug;
+use std::hash::Hash;
+
+pub(crate) trait GameScene: States // 'static + Send + Sync + Clone + PartialEq + Eq + Hash + Debug
+{
+    fn register_type(&self, app: &mut App);
+    fn configure_set(&self, app: &mut App);
 }
 
 #[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]
-pub(crate) struct GameSceneSet(GameScene);
-
-#[derive(Debug, States, Hash, Eq, PartialEq, Clone)]
-pub(crate) enum GameState {
-    Loading(GameScene),
-    Loaded(GameScene),
+pub(crate) enum GameScenesSet<T: GameScene> {
+    OnEnterSet(T),
+    UpdateSet(T),
+    OnExitSet(T),
 }
 
-impl Default for GameState {
-    fn default() -> Self {
-        Self::Loading(GameScene::default())
-    }
+#[derive(Debug, States, Hash, Eq, PartialEq, Clone)]
+pub(crate) enum SceneState {
+    Loading,
+    Loaded,
 }
 
 #[derive(Debug, Component, Reflect)]
 #[reflect(Component)]
-pub(crate) struct GameSceneMarker(pub GameScene);
+pub(crate) struct GameSceneMarker<T: GameScene>(pub T);
 
 // app state(?) loading, etc...
 
 #[derive(Debug)]
-pub(crate) struct GameScenesPlugin;
+pub(crate) struct GameScenePlugin;
 
-impl Plugin for GameScenesPlugin {
+impl Plugin for GameScenePlugin {
     fn build(&self, app: &mut App) {
-        app.insert_state(GameState::Loading(GameScene::Bullpen));
+        // default scene to start from
+        app.insert_state(BullpenScene);
 
-        app.register_type::<GameSceneMarker>();
-
-        // app.add_systems(PostStartup, (setup_scene, spawn_camera.after(setup_scene)));
-        app.configure_sets(
-            OnEnter(GameState::Loading(GameScene::Bullpen)),
-            GameSceneSet(GameScene::Bullpen),
-        )
-        .configure_sets(
-            Update,
-            GameSceneSet(GameScene::Bullpen)
-                .run_if(in_state(GameState::Loaded(GameScene::Bullpen))),
-        );
-
-        // app.add_systems(
-        //     Update,
-        //     spawn_ball
-        //         .run_if(input_just_released(KeyCode::KeyR))
-        //         .in_set(AeroActivationSet::PreActivation),
-        // );
+        app.add_plugins(BullpenScene);
     }
 }

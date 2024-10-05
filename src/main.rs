@@ -4,7 +4,6 @@ mod scenes;
 
 use crate::prelude::*;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
-use scenes::GameScenesPlugin;
 
 const WINDOW_WIDTH: f32 = 1920.0;
 const WINDOW_HEIGHT: f32 = 1024.0;
@@ -57,7 +56,7 @@ fn main() {
         drag_on: true,
     });
 
-    app.add_plugins(GameScenesPlugin);
+    app.add_plugins(GameScenePlugin);
 
     app.run();
 }

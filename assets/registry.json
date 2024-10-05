@@ -15120,6 +15120,33 @@
       "type": "object",
       "typeInfo": "Struct"
     },
+    "the_bullpen_game::scenes::GameSceneMarker<the_bullpen_game::scenes::bullpen::BullpenScene>": {
+      "isComponent": true,
+      "isResource": false,
+      "items": false,
+      "long_name": "the_bullpen_game::scenes::GameSceneMarker<the_bullpen_game::scenes::bullpen::BullpenScene>",
+      "prefixItems": [
+        {
+          "type": {
+            "$ref": "#/$defs/the_bullpen_game::scenes::bullpen::BullpenScene"
+          }
+        }
+      ],
+      "short_name": "GameSceneMarker<BullpenScene>",
+      "type": "array",
+      "typeInfo": "TupleStruct"
+    },
+    "the_bullpen_game::scenes::bullpen::BullpenScene": {
+      "additionalProperties": false,
+      "isComponent": false,
+      "isResource": false,
+      "long_name": "the_bullpen_game::scenes::bullpen::BullpenScene",
+      "properties": {},
+      "required": [],
+      "short_name": "BullpenScene",
+      "type": "object",
+      "typeInfo": "Struct"
+    },
     "u128": {
       "isComponent": false,
       "isResource": false,
