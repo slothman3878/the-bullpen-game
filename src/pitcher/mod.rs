@@ -46,12 +46,6 @@ impl<T: GameScene> Plugin for PitcherPlugin<T> {
             setup_camera
                 .in_set(GameScenesSet::UpdateSet(self.scene.clone()))
                 .in_set(GltfBlueprintsSet::AfterSpawn),
-        )
-        .add_systems(
-            Update,
-            start_pitch
-                .run_if(input_just_released(KeyCode::KeyK))
-                .in_set(GameScenesSet::UpdateSet(self.scene.clone())),
         );
     }
 }
