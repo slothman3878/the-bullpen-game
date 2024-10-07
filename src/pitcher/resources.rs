@@ -8,7 +8,7 @@ pub(crate) struct PitchParams {
     // not a parameter controlled by user
     // dependent on release moment, player stats, etc
     pub starting_point: Vec3,
-    pub velocity: f32,  // mph
+    pub speed: f32,     // mph
     pub spin_rate: f32, // rpm
     pub direction: Vec3,
     // can partially be controlled by user

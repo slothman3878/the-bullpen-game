@@ -12,6 +12,7 @@ use systems::*;
 
 pub(crate) mod prelude {
     pub(crate) use super::*;
+    pub(crate) use components::*;
     pub(crate) use resources::*;
 }
 
@@ -31,8 +32,8 @@ impl<T: GameScene> Plugin for PitcherPlugin<T> {
         app.insert_resource(SelectedPitchParameters(PitchParams {
             gyro_pole: GyroPole::default(),
             spin_efficiency: 1.0,
-            velocity: 96. * MPH_TO_FTS,
-            spin_rate: 2400.,
+            speed: 70. * MPH_TO_FTS,
+            spin_rate: -1400.,
             seam_y_angle: 0.,
             seam_z_angle: std::f32::consts::PI / 2.,
             tilt: Tilt::from_hour_mintes(12, 0),
