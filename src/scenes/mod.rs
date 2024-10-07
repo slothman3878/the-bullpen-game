@@ -1,5 +1,3 @@
-extern crate proc_macro;
-
 pub(crate) mod bullpen;
 
 pub(crate) mod prelude {

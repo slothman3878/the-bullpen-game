@@ -600,6 +600,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "bevy_dolly"
+version = "0.0.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e784bbab334c8025fdb175ad8a4f81d88ea82fa954714f2cf435565c806cbfc8"
+dependencies = [
+ "bevy",
+ "bevy_math",
+ "bevy_transform",
+ "leafwing-input-manager",
+]
+
+[[package]]
 name = "bevy_dylib"
 version = "0.14.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4019,6 +4031,7 @@ dependencies = [
  "bevy",
  "bevy-inspector-egui",
  "bevy-rapier-baseball-flight",
+ "bevy_dolly",
  "bevy_flycam",
  "bevy_rapier3d",
  "bevy_third_person_camera",

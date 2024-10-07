@@ -1,8 +1,10 @@
+mod pitcher;
 mod prelude;
 mod scenes;
 
 use crate::prelude::*;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
+use bevy_third_person_camera::ThirdPersonCameraPlugin;
 
 const WINDOW_WIDTH: f32 = 1920.0;
 const WINDOW_HEIGHT: f32 = 1024.0;
@@ -54,6 +56,7 @@ fn main() {
         magnus_on: true,
         drag_on: true,
     });
+    app.add_plugins(ThirdPersonCameraPlugin);
 
     app.add_plugins(GameScenePlugin);
 

@@ -15,16 +15,16 @@ pub(crate) struct BullpenScene;
 impl GameScene for BullpenScene {
     fn configure_set(&self, app: &mut App) {
         app.configure_sets(
-            OnEnter(Self),
-            GameScenesSet::OnEnterSet(Self).run_if(in_state(Self)),
+            OnEnter(*self),
+            ((GameScenesSet::OnEnterSet(*self),).run_if(in_state(*self)),),
         )
         .configure_sets(
             Update,
-            GameScenesSet::UpdateSet(Self).run_if(in_state(Self)),
+            GameScenesSet::UpdateSet(*self).run_if(in_state(*self)),
         )
         .configure_sets(
-            OnExit(Self),
-            GameScenesSet::OnExitSet(Self).run_if(in_state(Self)),
+            OnExit(*self),
+            GameScenesSet::OnExitSet(*self).run_if(in_state(*self)),
         );
     }
 
@@ -38,16 +38,22 @@ impl Plugin for BullpenScene {
         self.register_type(app);
         self.configure_set(app);
 
+        app.add_plugins(PitcherPlugin::<BullpenScene> { scene: *self });
+
         app.add_systems(
             OnEnter(Self),
-            (setup_scene, spawn_camera.after(setup_scene)).in_set(GameScenesSet::OnEnterSet(Self)),
+            (
+                setup_scene,
+                // spawn_camera.after(setup_scene),
+            )
+                .in_set(GameScenesSet::OnEnterSet(*self)),
         )
         .add_systems(
             Update,
             (spawn_ball
                 .run_if(input_just_released(KeyCode::KeyR))
                 .in_set(AeroActivationSet::PreActivation))
-            .in_set(GameScenesSet::UpdateSet(Self)),
+            .in_set(GameScenesSet::UpdateSet(*self)),
         );
     }
 }

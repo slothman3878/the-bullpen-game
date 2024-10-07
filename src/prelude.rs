@@ -13,8 +13,10 @@ pub(crate) use bevy::{
 };
 pub(crate) use bevy_rapier3d::prelude::*;
 pub(crate) use bevy_rapier_baseball_flight::{prelude::*, AeroActivationSet};
+pub(crate) use bevy_third_person_camera::*;
 pub(crate) use blenvy::*;
 
 pub(crate) use bevy_flycam::{FlyCam, NoCameraPlayerPlugin};
 
+pub(crate) use crate::pitcher::prelude::*;
 pub(crate) use crate::scenes::prelude::*;

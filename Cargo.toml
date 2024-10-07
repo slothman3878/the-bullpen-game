@@ -39,6 +39,7 @@ bevy-inspector-egui = "^0.25.1"
 bevy_third_person_camera = "0.1.11"
 bevy-rapier-baseball-flight = "0.0.1-alpha.3"
 bevy_rapier3d = "0.27.0"
+bevy_dolly = { version = "0.0.4" }
 
 [dev-dependencies]
 bevy-inspector-egui = "^0.25.1"
