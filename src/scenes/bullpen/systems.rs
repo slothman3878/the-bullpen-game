@@ -25,14 +25,34 @@ pub(crate) fn setup_scene(mut commands: Commands) {
     ));
 }
 
+#[derive(Debug, Component)]
+pub(crate) struct BaseballMarker;
+
+pub(crate) fn despawn_ball(
+    mut commands: Commands,
+    query_baseball: Query<Entity, With<BaseballMarker>>,
+) {
+    for baseball in query_baseball.iter() {
+        commands.entity(baseball).despawn_recursive();
+    }
+}
+
 pub(crate) fn spawn_ball(
     mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+) {
+}
+
+pub(crate) fn launch_ball(
+    mut commands: Commands,
+    selected_pitch_parameters: Res<SelectedPitchParameters>,
     mut ev_activate_aerodynamics: EventWriter<ActivateAerodynamicsEvent>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    let gyro_pole = GyroPole::default();
-    let spin_efficiency: f32 = 1.0;
+    let gyro_pole = selected_pitch_parameters.0.gyro_pole;
+    let spin_efficiency: f32 = selected_pitch_parameters.0.spin_efficiency;
     let velocity: f32 = 96. * MPH_TO_FTS;
     let spin_rate: f32 = 2400.;
     let seam_z_angle: f32 = std::f32::consts::PI / 2.;
@@ -59,6 +79,7 @@ pub(crate) fn spawn_ball(
     );
     let entity = commands
         .spawn((
+            BaseballMarker,
             Name::new("ball"),
             //
             BaseballFlightBundle::default(),

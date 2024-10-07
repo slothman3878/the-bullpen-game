@@ -12,6 +12,7 @@ use systems::*;
 
 pub(crate) mod prelude {
     pub(crate) use super::*;
+    pub(crate) use resources::*;
 }
 
 #[derive(Debug)]
