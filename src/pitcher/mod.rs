@@ -31,12 +31,12 @@ impl<T: GameScene> Plugin for PitcherPlugin<T> {
 
         app.insert_resource(SelectedPitchParameters(PitchParams {
             gyro_pole: GyroPole::default(),
-            spin_efficiency: 1.0,
-            speed: 70. * MPH_TO_FTS,
-            spin_rate: -1400.,
+            spin_efficiency: 1.,
+            speed: 90. * MPH_TO_FTS,
+            spin_rate: 2000.,
             seam_y_angle: 0.,
             seam_z_angle: std::f32::consts::PI / 2.,
-            tilt: Tilt::from_hour_mintes(12, 0),
+            tilt: Tilt::from_hour_mintes(7, 30),
             starting_point: Vec3::new(0.48, 1.82, 16.764),
             direction: Vec3::ZERO,
         }));
