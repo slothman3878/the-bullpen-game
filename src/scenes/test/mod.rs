@@ -48,6 +48,11 @@ impl Plugin for TestScene {
             )
                 .chain()
                 .in_set(GameScenesSet::OnEnterSet(*self)),
+        )
+        .add_systems(
+            Update,
+            (push_shoulder.run_if(input_pressed(KeyCode::KeyR)))
+                .in_set(GameScenesSet::UpdateSet(*self)),
         );
     }
 }
@@ -96,10 +101,22 @@ pub(crate) fn setup_sun(mut commands: Commands) {
     });
 }
 
+#[derive(Component)]
+struct ShoulderMarker;
+
+fn push_shoulder(mut commands: Commands, query_shoulder: Query<Entity, With<ShoulderMarker>>) {
+    let shoulder = query_shoulder.single();
+    commands.entity(shoulder).insert(ExternalImpulse {
+        // impulse: Vec3::new(0., 0., 0.2),
+        torque_impulse: Vec3::new(0., -0.01, 0.),
+        ..default()
+    });
+}
+
 pub(crate) fn spawn_arms(mut commands: Commands) {
     let upper_torso = commands
         .spawn((
-            RigidBody::Dynamic,
+            RigidBody::KinematicVelocityBased,
             GravityScale(0.),
             Collider::cuboid(0.5, 0.1, 0.1),
             TransformBundle::from_transform(Transform::from_translation(Vec3::new(0., 1.6, 0.))),
@@ -110,38 +127,52 @@ pub(crate) fn spawn_arms(mut commands: Commands) {
         ))
         .id();
 
-    let shoulder_joint = SphericalJointBuilder::new()
-        .local_anchor1(Vec3::new(1., 0.0, 0.0))
+    // let shoulder_joint = SphericalJointBuilder::new()
+    //     .local_anchor1(Vec3::new(1., 0.0, 0.0))
+    //     .local_anchor2(Vec3::new(0., 0.0, 0.0));
+    // let shoulder_joint = GenericJointBuilder::new(JointAxesMask::ANG_AXES)
+    //     .local_anchor1(Vec3::new(0.6, 0.0, 0.0))
+    //     .coupled_axes(JointAxesMask::LIN_AXES)
+    //     .motor_position(JointAxis::LinX, 1., 0.1, 0.0)
+    //     .motor_model(JointAxis::LinX, MotorModel::ForceBased)
+    //     .build();
+
+    let shoulder_joint = GenericJointBuilder::new(JointAxesMask::LIN_AXES)
+        .local_anchor1(Vec3::new(0.8, 0.0, 0.0))
         .local_anchor2(Vec3::new(0., 0.0, 0.0))
-        .motor_position(JointAxis::AngZ, PI, 0.1, 0.);
+        // .local_axis1(Vec3::Y)
+        // .local_axis2(Vec3::Y)
+        .coupled_axes(JointAxesMask::LIN_AXES)
+        // .motor_position(JointAxis::AngX, PI / 6., 0.001, 0.001)
+        // .motor_model(JointAxis::AngX, MotorModel::ForceBased)
+        .motor_position(JointAxis::AngY, PI / 2., 0.1, 0.1)
+        .motor_model(JointAxis::AngY, MotorModel::ForceBased)
+        // .motor_position(JointAxis::AngZ, 0., 0.001, 0.001)
+        // .motor_model(JointAxis::AngZ, MotorModel::ForceBased)
+        .limits(JointAxis::AngY, [0., PI])
+        .build();
+
     let shoulder = commands
         .spawn((
             RigidBody::Dynamic,
             GravityScale(0.),
             Collider::cuboid(0.05, 0.05, 0.05),
-            TransformBundle::from_transform(Transform::from_translation(Vec3::new(1., 1.6, 0.))),
-            ImpulseJoint::new(upper_torso, shoulder_joint),
+            TransformBundle::from_transform(Transform::from_translation(Vec3::new(2., 1.6, 0.))),
+            ImpulseJoint::new(upper_torso, TypedJoint::GenericJoint(shoulder_joint)),
+            ShoulderMarker,
         ))
         .id();
 
-    let elbow_joint = SphericalJointBuilder::new()
-        .local_anchor1(Vec3::new(1., 0., 0.))
-        .local_anchor2(Vec3::ZERO)
-        .motor_position(JointAxis::AngZ, PI, 0.1, 0.);
-    let elbow = commands
-        .spawn((
-            RigidBody::Dynamic,
-            GravityScale(0.),
-            Collider::cuboid(0.05, 0.05, 0.05),
-            TransformBundle::from_transform(Transform::from_translation(Vec3::new(2., 1.6, 0.))),
-            ImpulseJoint::new(shoulder, elbow_joint),
-        ))
-        .id();
-    // commands
-    //     .entity(parent_entity)
-    //     .insert(ExternalImpulse::at_point(
-    //         Vec3::new(0., 0., 0.1),
-    //         Vec3::new(0., 1.6, 0.),
-    //         Vec3::new(0., 1.6, 0.),
-    //     ));
+    // let elbow_joint = SphericalJointBuilder::new()
+    //     .local_anchor1(Vec3::new(1., 0., 0.))
+    //     .local_anchor2(Vec3::ZERO);
+    // let elbow = commands
+    //     .spawn((
+    //         RigidBody::Dynamic,
+    //         GravityScale(0.),
+    //         Collider::cuboid(0.05, 0.05, 0.05),
+    //         TransformBundle::from_transform(Transform::from_translation(Vec3::new(2., 1.6, 0.))),
+    //         ImpulseJoint::new(shoulder, elbow_joint),
+    //     ))
+    //     .id();
 }
