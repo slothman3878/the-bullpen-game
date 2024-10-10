@@ -1,7 +1,9 @@
 pub(crate) mod bullpen;
+pub(crate) mod test;
 
 pub(crate) mod prelude {
     pub(crate) use super::bullpen::prelude::*;
+    pub(crate) use super::test::prelude::*;
     pub(crate) use super::*;
 }
 
@@ -41,8 +43,9 @@ pub(crate) struct GameScenePlugin;
 impl Plugin for GameScenePlugin {
     fn build(&self, app: &mut App) {
         // default scene to start from
-        app.insert_state(BullpenScene);
+        // app.insert_state(BullpenScene);
+        app.insert_state(TestScene);
 
-        app.add_plugins(BullpenScene);
+        app.add_plugins(BullpenScene).add_plugins(TestScene);
     }
 }

@@ -41,6 +41,8 @@ impl<T: GameScene> Plugin for PitcherPlugin<T> {
             direction: Vec3::ZERO,
         }));
 
+        // app.add_systems(OnEnter(self.scene.clone()), spawn_arms);
+
         app.add_systems(
             Update,
             setup_camera
