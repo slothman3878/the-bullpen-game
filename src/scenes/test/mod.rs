@@ -51,7 +51,13 @@ impl Plugin for TestScene {
         )
         .add_systems(
             Update,
-            (push_shoulder.run_if(input_pressed(KeyCode::KeyR)))
+            (
+                // rotate_pelvis.run_if(input_just_released(KeyCode::KeyR)),
+                // stop_pelvis,
+                push_pelvis.run_if(input_just_released(KeyCode::KeyR)),
+                push_shoulder.run_if(input_pressed(MouseButton::Left)),
+            )
+                .chain()
                 .in_set(GameScenesSet::UpdateSet(*self)),
         );
     }
@@ -108,6 +114,33 @@ enum ArmPartMarker {
     Elbow,
 }
 
+#[derive(Component)]
+struct Pelvis;
+
+fn push_pelvis(mut commands: Commands, query_pelvis: Query<(Entity, &Transform), With<Pelvis>>) {
+    if let Ok((pelvis, transform)) = query_pelvis.get_single() {
+        commands.entity(pelvis).insert(ExternalImpulse {
+            // impulse: Vec3::new(0., 0., 0.2),
+            torque_impulse: -1. * transform.rotation.mul_vec3(Vec3::Y),
+            ..default()
+        });
+    }
+}
+
+fn rotate_pelvis(mut query_pelvis: Query<(&mut Velocity), With<Pelvis>>) {
+    if let Ok(mut pelvis) = query_pelvis.get_single_mut() {
+        pelvis.angvel = -10. * Vec3::Y;
+    }
+}
+
+fn stop_pelvis(mut query_pelvis: Query<(&mut Velocity, &Transform), With<Pelvis>>) {
+    if let Ok((mut pelvis, transform)) = query_pelvis.get_single_mut() {
+        if transform.rotation.angle_between(Quat::from_rotation_y(0.)) < 0.001 {
+            pelvis.angvel = 0. * Vec3::Y;
+        }
+    }
+}
+
 fn push_shoulder(
     mut commands: Commands,
     query_shoulder: Query<(Entity, &Transform, &ArmPartMarker)>,
@@ -117,21 +150,21 @@ fn push_shoulder(
             ArmPartMarker::Torso => {
                 commands.entity(entity).insert(ExternalImpulse {
                     // impulse: Vec3::new(0., 0., 0.2),
-                    torque_impulse: 0.01 * transform.rotation.mul_vec3(Vec3::Y),
+                    torque_impulse: 0.03 * transform.rotation.mul_vec3(Vec3::Y),
                     ..default()
                 });
             }
             ArmPartMarker::Shoulder => {
                 commands.entity(entity).insert(ExternalImpulse {
                     // impulse: Vec3::new(0., 0., 0.2),
-                    torque_impulse: -0.01 * transform.rotation.mul_vec3(Vec3::X),
+                    torque_impulse: -0.03 * transform.rotation.mul_vec3(Vec3::X),
                     ..default()
                 });
             }
             ArmPartMarker::Elbow => {
                 commands.entity(entity).insert(ExternalImpulse {
                     // impulse: Vec3::new(0., 0., 0.2),
-                    torque_impulse: 0.01 * transform.rotation.mul_vec3(Vec3::Z),
+                    torque_impulse: 0.03 * transform.rotation.mul_vec3(Vec3::Z),
                     ..default()
                 });
             }
@@ -140,17 +173,48 @@ fn push_shoulder(
 }
 
 pub(crate) fn spawn_arms(mut commands: Commands) {
+    let core = commands
+        .spawn((
+            RigidBody::KinematicPositionBased,
+            GravityScale(0.),
+            ColliderMassProperties::Density(100.),
+            Collider::cuboid(0.1, 0.1, 0.1),
+            TransformBundle::from_transform(
+                Transform::from_translation(Vec3::new(0., 0., 0.))
+                    .with_rotation(Quat::from_rotation_y(PI / 2.)),
+            ),
+        ))
+        .id();
+
+    let pelvic_joint = GenericJointBuilder::new(JointAxesMask::LIN_AXES)
+        .local_anchor1(Vec3::new(0., 1.0, 0.0))
+        .local_anchor2(Vec3::new(0., 0.0, 0.0))
+        // .local_axis1(Vec3::Y)
+        // .local_axis2(Vec3::Y)
+        .coupled_axes(JointAxesMask::LIN_AXES)
+        // .motor_position(JointAxis::AngY, 0., 1., 0.1)
+        // .motor_model(JointAxis::AngY, MotorModel::ForceBased)
+        .limits(JointAxis::AngX, [-0.01, 0.01])
+        .limits(JointAxis::AngY, [-PI / 2., 0.])
+        .limits(JointAxis::AngZ, [-0.01, 0.01])
+        .build();
+
     let pelvis = commands
         .spawn((
-            RigidBody::KinematicVelocityBased,
+            RigidBody::Dynamic,
             GravityScale(0.),
-            Collider::cuboid(0.5, 0.1, 0.1),
-            TransformBundle::from_transform(Transform::from_translation(Vec3::new(0., 0., 0.))),
+            Collider::cuboid(0.3, 0.1, 0.1),
+            TransformBundle::from_transform(
+                Transform::from_translation(Vec3::new(0., 1., 0.))
+                    .with_rotation(Quat::from_rotation_y(PI / 2.)),
+            ),
+            ImpulseJoint::new(core, TypedJoint::GenericJoint(pelvic_joint)),
+            Pelvis,
         ))
         .id();
 
     let spinal_joint = GenericJointBuilder::new(JointAxesMask::LIN_AXES)
-        .local_anchor1(Vec3::new(0., 1.6, 0.0))
+        .local_anchor1(Vec3::new(0., 0.6, 0.0))
         .local_anchor2(Vec3::new(0., 0.0, 0.0))
         // .local_axis1(Vec3::Y)
         // .local_axis2(Vec3::Y)
@@ -158,7 +222,7 @@ pub(crate) fn spawn_arms(mut commands: Commands) {
         .motor_position(JointAxis::AngY, 0., 1., 0.1)
         .motor_model(JointAxis::AngY, MotorModel::ForceBased)
         .limits(JointAxis::AngX, [-0.01, 0.01])
-        .limits(JointAxis::AngY, [-PI / 2., PI / 2.])
+        .limits(JointAxis::AngY, [-0.01, 0.01])
         .limits(JointAxis::AngZ, [-0.01, 0.01])
         .build();
 
@@ -171,10 +235,6 @@ pub(crate) fn spawn_arms(mut commands: Commands) {
             TransformBundle::from_transform(Transform::from_translation(Vec3::new(0., 1.6, 0.))),
             ImpulseJoint::new(pelvis, TypedJoint::GenericJoint(spinal_joint)),
             ArmPartMarker::Torso,
-            // Velocity {
-            //     linvel: Vec3::new(0., 0., 1.),
-            //     ..default()
-            // },
         ))
         .id();
 
