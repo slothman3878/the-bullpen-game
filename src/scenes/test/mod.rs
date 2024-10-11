@@ -55,7 +55,8 @@ impl Plugin for TestScene {
             Update,
             (
                 max_er.run_if(input_just_released(KeyCode::KeyR)),
-                push_shoulder.run_if(input_pressed(MouseButton::Left)),
+                release.run_if(input_just_released(MouseButton::Left)),
+                // push_shoulder.run_if(input_pressed(MouseButton::Left)),
             )
                 .chain()
                 .in_set(GameScenesSet::UpdateSet(*self)),
@@ -167,6 +168,45 @@ fn max_er(mut query_pelvis: Query<(Entity, &mut ImpulseJoint), With<Pelvis>>) {
     }
 }
 
+fn release(mut query_arm_part: Query<(Entity, &mut ImpulseJoint, &ArmPartMarker)>) {
+    for (_, mut impulse_joint, arm_part) in query_arm_part.iter_mut() {
+        match arm_part {
+            ArmPartMarker::Elbow => {
+                let new_joint = GenericJointBuilder::new(JointAxesMask::LIN_AXES)
+                    .local_anchor1(Vec3::new(0.8, 0.0, 0.0))
+                    .local_anchor2(Vec3::new(0., 0.0, 0.0))
+                    // .local_axis1(Vec3::Y)
+                    // .local_axis2(Vec3::Y)
+                    .coupled_axes(JointAxesMask::LIN_AXES)
+                    // .motor_position(JointAxis::AngZ, 0., 0.9, 0.1)
+                    // .motor_model(JointAxis::AngZ, MotorModel::ForceBased)
+                    .limits(JointAxis::AngX, [-0.01, 0.01])
+                    // .limits(JointAxis::AngY, [-0.01, 0.01])
+                    // .limits(JointAxis::AngZ, [PI / 2. - 0.01, PI / 2. + 0.01])
+                    .build();
+
+                impulse_joint.data = TypedJoint::GenericJoint(new_joint);
+            }
+            ArmPartMarker::Shoulder => {
+                let new_joint = GenericJointBuilder::new(JointAxesMask::LIN_AXES)
+                    .local_anchor1(Vec3::new(0.8, 0.0, 0.0))
+                    .local_anchor2(Vec3::new(0., 0.0, 0.0))
+                    // .local_axis1(Vec3::Y)
+                    // .local_axis2(Vec3::Y)
+                    .coupled_axes(JointAxesMask::LIN_AXES)
+                    .motor_position(JointAxis::AngX, 0., 0.1, 0.01)
+                    .motor_model(JointAxis::AngX, MotorModel::ForceBased)
+                    // .limits(JointAxis::AngX, [-0.01, PI / 2. + 0.01])
+                    .limits(JointAxis::AngY, [-0.01, 0.01])
+                    .limits(JointAxis::AngZ, [-0.01, 0.01])
+                    .build();
+                impulse_joint.data = TypedJoint::GenericJoint(new_joint);
+            }
+            _ => {}
+        }
+    }
+}
+
 pub(crate) fn spawn_arms(mut commands: Commands) {
     let core = commands
         .spawn((
@@ -258,7 +298,7 @@ pub(crate) fn spawn_arms(mut commands: Commands) {
         // .local_axis1(Vec3::Y)
         // .local_axis2(Vec3::Y)
         .coupled_axes(JointAxesMask::LIN_AXES)
-        .motor_position(JointAxis::AngZ, 0., 0.9, 0.1)
+        .motor_position(JointAxis::AngZ, 0., 1., 0.1)
         .motor_model(JointAxis::AngZ, MotorModel::ForceBased)
         .limits(JointAxis::AngX, [-0.01, 0.01])
         .limits(JointAxis::AngY, [-0.01, 0.01])
@@ -283,7 +323,7 @@ pub(crate) fn spawn_arms(mut commands: Commands) {
         // .local_axis1(Vec3::Y)
         // .local_axis2(Vec3::Y)
         .coupled_axes(JointAxesMask::LIN_AXES)
-        .motor_position(JointAxis::AngZ, 0., 0.1, 0.1)
+        .motor_position(JointAxis::AngZ, 0., 1., 0.1)
         .motor_model(JointAxis::AngZ, MotorModel::ForceBased)
         .limits(JointAxis::AngX, [-0.01, 0.01])
         .limits(JointAxis::AngY, [-0.01, 0.01])
