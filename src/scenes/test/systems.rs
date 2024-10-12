@@ -142,27 +142,33 @@ pub(crate) fn mark_velo(mut query_arm_part: Query<(&BodyPartMarker, &Velocity)>)
 }
 
 pub(crate) fn spawn_arms(mut commands: Commands) {
-    let params = PitcherParams {
+    let mut params = PitcherParams {
         height: 1.85,
         pitching_arm: PitchingArm::Left,
         lateral_trunk_tilt: PI / 4.,
+        ..default()
     };
     commands
-        .spawn((
-            params.clone(),
-            TransformBundle::from_transform(Transform::from_translation(Vec3::ZERO)),
-        ))
+        .spawn((TransformBundle::from_transform(
+            Transform::from_translation(Vec3::ZERO),
+        ),))
         .with_children(|children| {
             let core = params.build_core(children);
 
             let pelvis = params.build_pelvis(core, children);
+            params.body_parts.insert(BodyPartMarker::Pelvis, pelvis);
 
             let upper_torso = params.build_upper_torso(pelvis, children);
+            params.body_parts.insert(BodyPartMarker::Torso, upper_torso);
 
             let shoulder = params.build_shoulder(upper_torso, children);
+            params.body_parts.insert(BodyPartMarker::Shoulder, shoulder);
 
             let elbow = params.build_elbow(shoulder, children);
+            params.body_parts.insert(BodyPartMarker::Elbow, elbow);
 
             let wrist = params.build_wrist(elbow, children);
-        });
+            params.body_parts.insert(BodyPartMarker::Wrist, wrist);
+        })
+        .insert(params);
 }

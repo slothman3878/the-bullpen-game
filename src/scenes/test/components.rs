@@ -1,6 +1,8 @@
+use bevy::utils::HashMap;
+
 use crate::prelude::*;
 
-#[derive(Debug, Reflect, Clone, Component)]
+#[derive(Debug, Reflect, Clone, Component, Hash, PartialEq, Eq, PartialOrd)]
 #[reflect(Component)]
 pub(crate) enum BodyPartMarker {
     Pelvis,
@@ -10,8 +12,9 @@ pub(crate) enum BodyPartMarker {
     Wrist,
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Default)]
 pub(crate) enum PitchingArm {
+    #[default]
     Left,
     Right,
 }
@@ -36,11 +39,25 @@ pub(crate) enum PitchStage {
     // FollowThrough
 }
 
-#[derive(Debug, Component, Clone, Copy)]
+#[derive(Debug, Component, Clone)]
 pub(crate) struct PitcherParams {
     pub height: f32,
     pub pitching_arm: PitchingArm,
     pub lateral_trunk_tilt: f32,
+    //
+    pub body_parts: HashMap<BodyPartMarker, Entity>,
+}
+
+impl Default for PitcherParams {
+    fn default() -> Self {
+        let body_parts = HashMap::<BodyPartMarker, Entity>::new();
+        Self {
+            height: 0.,
+            pitching_arm: PitchingArm::default(),
+            lateral_trunk_tilt: 0.,
+            body_parts,
+        }
+    }
 }
 
 impl PitcherParams {
