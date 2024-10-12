@@ -37,7 +37,8 @@ impl GameScene for TestScene {
     }
 
     fn register_type(&self, app: &mut App) {
-        app.register_type::<GameSceneMarker<Self>>();
+        app.register_type::<GameSceneMarker<Self>>()
+            .register_type::<BodyPartMarker>();
     }
 }
 
@@ -64,7 +65,7 @@ impl Plugin for TestScene {
             (
                 max_er.run_if(input_just_released(KeyCode::KeyR)),
                 release.run_if(input_just_released(MouseButton::Left)),
-                // push_shoulder.run_if(input_pressed(MouseButton::Left)),
+                mark_velo.run_if(input_just_released(KeyCode::KeyM)), // push_shoulder.run_if(input_pressed(MouseButton::Left)),
             )
                 .chain()
                 .in_set(GameScenesSet::UpdateSet(*self)),

@@ -1,11 +1,13 @@
 use crate::prelude::*;
 
-#[derive(Component)]
+#[derive(Debug, Reflect, Clone, Component)]
+#[reflect(Component)]
 pub(crate) enum BodyPartMarker {
     Pelvis,
     Torso,
     Shoulder,
     Elbow,
+    Wrist,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -188,11 +190,6 @@ impl PitcherParams {
     }
 
     pub(crate) fn build_wrist(&self, elbow: Entity, children: &mut ChildBuilder) -> Entity {
-        let ang_x_range: [f32; 2] = match self.pitching_arm {
-            PitchingArm::Left => [-0.01, 0.01],
-            PitchingArm::Right => [-0.01, 0.01],
-        };
-
         let wrist_joint = GenericJointBuilder::new(JointAxesMask::LIN_AXES)
             .local_anchor1(Vec3::new(self.pitching_arm.sign() * 0.8, 0.0, 0.0))
             .local_anchor2(Vec3::new(0., 0.0, 0.0))
@@ -216,6 +213,8 @@ impl PitcherParams {
                     0.,
                 ))),
                 ImpulseJoint::new(elbow, TypedJoint::GenericJoint(wrist_joint)),
+                Velocity::default(),
+                BodyPartMarker::Wrist,
             ))
             .id()
     }

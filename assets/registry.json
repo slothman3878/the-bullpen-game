@@ -15207,6 +15207,21 @@
       "type": "object",
       "typeInfo": "Struct"
     },
+    "the_bullpen_game::scenes::test::components::BodyPartMarker": {
+      "isComponent": true,
+      "isResource": false,
+      "long_name": "the_bullpen_game::scenes::test::components::BodyPartMarker",
+      "oneOf": [
+        "Pelvis",
+        "Torso",
+        "Shoulder",
+        "Elbow",
+        "Wrist"
+      ],
+      "short_name": "BodyPartMarker",
+      "type": "string",
+      "typeInfo": "Enum"
+    },
     "u128": {
       "isComponent": false,
       "isResource": false,

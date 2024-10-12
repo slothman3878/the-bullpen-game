@@ -60,8 +60,10 @@ pub(crate) fn max_er(
 }
 
 // this is at pevlis break
-pub(crate) fn release(mut query_arm_part: Query<(Entity, &mut ImpulseJoint, &BodyPartMarker)>) {
-    for (_, mut impulse_joint, arm_part) in query_arm_part.iter_mut() {
+pub(crate) fn release(
+    mut query_arm_part: Query<(Entity, &mut ImpulseJoint, &BodyPartMarker, &Velocity)>,
+) {
+    for (_, mut impulse_joint, arm_part, velo) in query_arm_part.iter_mut() {
         match arm_part {
             BodyPartMarker::Pelvis => {
                 let new_joint = GenericJointBuilder::new(JointAxesMask::LIN_AXES)
@@ -119,6 +121,20 @@ pub(crate) fn release(mut query_arm_part: Query<(Entity, &mut ImpulseJoint, &Bod
                     .limits(JointAxis::AngZ, [-0., 0.])
                     .build();
                 impulse_joint.data = TypedJoint::GenericJoint(new_joint);
+            }
+            BodyPartMarker::Wrist => {
+                info!("velo: {:?}", velo.linvel.length());
+            }
+        }
+    }
+}
+
+// this is at pevlis break
+pub(crate) fn mark_velo(mut query_arm_part: Query<(&BodyPartMarker, &Velocity)>) {
+    for (body_part, velo) in query_arm_part.iter_mut() {
+        match body_part {
+            BodyPartMarker::Wrist => {
+                info!("velo: {:?}", velo.linvel.length());
             }
             _ => {}
         }
