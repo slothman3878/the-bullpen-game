@@ -130,7 +130,7 @@ fn max_er(
                     // .motor_position(JointAxis::AngY, 0., 1., 0.0001)
                     // .motor_model(JointAxis::AngY, MotorModel::ForceBased)
                     .limits(JointAxis::AngX, [-0., 0.])
-                    .limits(JointAxis::AngY, [-PI / 4. - 0.01, PI / 2. + 0.01])
+                    .limits(JointAxis::AngY, [-0.01, PI / 2. + 0.01])
                     .limits(JointAxis::AngZ, [-0., 0.])
                     .build();
 
@@ -141,6 +141,20 @@ fn max_er(
                     Vec3::new(0., 1., -0.2),
                     Vec3::new(0., 1., 0.),
                 ));
+            }
+            BodyPartMarker::Torso => {
+                let new_joint = GenericJointBuilder::new(JointAxesMask::LIN_AXES)
+                    .local_anchor1(Vec3::new(0., 0.6, 0.0))
+                    .local_anchor2(Vec3::new(0., 0.0, 0.0))
+                    .coupled_axes(JointAxesMask::LIN_AXES)
+                    // .motor_position(JointAxis::AngY, 0., 1., 0.01)
+                    .motor_model(JointAxis::AngZ, MotorModel::ForceBased)
+                    .limits(JointAxis::AngX, [-0., 0.])
+                    .limits(JointAxis::AngY, [-0.1, 0.1])
+                    .limits(JointAxis::AngZ, [-0., PI / 6.])
+                    .build();
+
+                impulse_joint.data = TypedJoint::GenericJoint(new_joint);
             }
             BodyPartMarker::Shoulder => {
                 let new_joint = GenericJointBuilder::new(JointAxesMask::LIN_AXES)
@@ -163,6 +177,34 @@ fn max_er(
 fn release(mut query_arm_part: Query<(Entity, &mut ImpulseJoint, &BodyPartMarker)>) {
     for (_, mut impulse_joint, arm_part) in query_arm_part.iter_mut() {
         match arm_part {
+            BodyPartMarker::Pelvis => {
+                let new_joint = GenericJointBuilder::new(JointAxesMask::LIN_AXES)
+                    .local_anchor1(Vec3::new(0., 1.0, 0.0))
+                    .local_anchor2(Vec3::new(0., 0.0, 0.0))
+                    .coupled_axes(JointAxesMask::LIN_AXES)
+                    // .motor_position(JointAxis::AngY, 0., 1., 0.0001)
+                    // .motor_model(JointAxis::AngY, MotorModel::ForceBased)
+                    .limits(JointAxis::AngX, [-0., 0.])
+                    .limits(JointAxis::AngY, [-0.01, 0.01])
+                    .limits(JointAxis::AngZ, [-0., 0.])
+                    .build();
+
+                impulse_joint.data = TypedJoint::GenericJoint(new_joint);
+            }
+            BodyPartMarker::Torso => {
+                let new_joint = GenericJointBuilder::new(JointAxesMask::LIN_AXES)
+                    .local_anchor1(Vec3::new(0., 0.6, 0.0))
+                    .local_anchor2(Vec3::new(0., 0.0, 0.0))
+                    .coupled_axes(JointAxesMask::LIN_AXES)
+                    // .motor_position(JointAxis::AngY, 0., 1., 0.0001)
+                    // .motor_model(JointAxis::AngY, MotorModel::ForceBased)
+                    .limits(JointAxis::AngX, [-0., 0.])
+                    .limits(JointAxis::AngY, [-PI / 4. - 0.01, PI / 2. + 0.01])
+                    .limits(JointAxis::AngZ, [-0., PI / 6.])
+                    .build();
+
+                impulse_joint.data = TypedJoint::GenericJoint(new_joint);
+            }
             BodyPartMarker::Elbow => {
                 let new_joint = GenericJointBuilder::new(JointAxesMask::LIN_AXES)
                     .local_anchor1(Vec3::new(0.8, 0.0, 0.0))
