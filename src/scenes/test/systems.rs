@@ -145,7 +145,7 @@ pub(crate) fn spawn_arms(mut commands: Commands) {
     let mut params = PitcherParams {
         height: 1.85,
         pitching_arm: PitchingArm::Left,
-        lateral_trunk_tilt: PI / 4.,
+        lateral_trunk_tilt: 70. * PI / 180.,
         rotation: Quat::from_rotation_y(0.),
         ..default()
     };
