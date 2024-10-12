@@ -7,22 +7,42 @@ pub(crate) enum PitchStageTransitionEvents {
     Release(Entity),
 }
 
-fn on_pitch_stage_transition_event(
+pub(crate) fn emit_foot_contact(
+    mut ev_pitch_stage_transition_event: EventWriter<PitchStageTransitionEvents>,
+    query_pitcher: Query<Entity, With<PitcherParams>>, // there must only one pitcher at a time?
+) {
+    if let Ok(pitcher_entity) = query_pitcher.get_single() {
+        ev_pitch_stage_transition_event
+            .send(PitchStageTransitionEvents::FootContact(pitcher_entity));
+    }
+}
+
+pub(crate) fn on_pitch_stage_transition_event(
     mut ev_pitch_stage_transition_event: EventReader<PitchStageTransitionEvents>,
     mut commands: Commands,
-    mut query_pitcher: Query<Entity, With<PitcherMarker>>,
-    mut query_body_part: Query<(Entity, &mut ImpulseJoint, &BodyPartMarker)>,
+    query_pitcher: Query<&PitcherParams>,
+    mut query_body_part: Query<&mut ImpulseJoint, With<BodyPartMarker>>,
 ) {
     for ev in ev_pitch_stage_transition_event.read() {
         match ev {
-            PitchStageTransitionEvents::FootContact(entity) => {
-                // need to get children of entity
-                if let Ok((entity, mut impulse_joint, arm_part)) = query_body_part.get(*entity) {}
+            PitchStageTransitionEvents::FootContact(pitcher_entity) => {
+                if let Ok(pitcher) = query_pitcher.get(*pitcher_entity) {
+                    for (body_part, body_part_entity) in pitcher.body_parts.iter() {
+                        if let Ok(mut impulse_joint) = query_body_part.get_mut(*body_part_entity) {
+                            pitcher.on_foot_contact(
+                                &mut commands,
+                                body_part,
+                                *body_part_entity,
+                                &mut impulse_joint,
+                            );
+                        }
+                    }
+                }
             }
-            PitchStageTransitionEvents::PelvisBreak(entity) => {
+            PitchStageTransitionEvents::PelvisBreak(_) => {
                 // commands.schedule_on_update(break_system);
             }
-            PitchStageTransitionEvents::Release(entity) => {
+            PitchStageTransitionEvents::Release(_) => {
                 // commands.schedule_on_update(release_system);
             }
         }

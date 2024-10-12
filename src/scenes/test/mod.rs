@@ -63,12 +63,17 @@ impl Plugin for TestScene {
         .add_systems(
             Update,
             (
-                max_er.run_if(input_just_released(KeyCode::KeyR)),
-                release.run_if(input_just_released(MouseButton::Left)),
+                // max_er.run_if(input_just_released(KeyCode::KeyR)),
+                // release.run_if(input_just_released(MouseButton::Left)),
+                emit_foot_contact.run_if(input_just_released(KeyCode::KeyR)),
                 mark_velo.run_if(input_just_released(KeyCode::KeyM)), // push_shoulder.run_if(input_pressed(MouseButton::Left)),
             )
                 .chain()
                 .in_set(GameScenesSet::UpdateSet(*self)),
+        )
+        .add_systems(
+            Update,
+            on_pitch_stage_transition_event.in_set(GameScenesSet::UpdateSet(*self)),
         );
     }
 }

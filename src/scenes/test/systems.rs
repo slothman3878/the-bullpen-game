@@ -146,6 +146,7 @@ pub(crate) fn spawn_arms(mut commands: Commands) {
         height: 1.85,
         pitching_arm: PitchingArm::Left,
         lateral_trunk_tilt: PI / 4.,
+        rotation: Quat::from_rotation_y(0.),
         ..default()
     };
     commands
