@@ -3,7 +3,7 @@ use crate::{pitcher, prelude::*};
 #[derive(Debug, Event)]
 pub(crate) enum PitchStageTransitionEvents {
     FootContact(Entity),
-    PelvisBreak(Entity),
+    MaxER(Entity),
     Release(Entity),
     MaxIR(Entity),
 }
@@ -36,8 +36,7 @@ pub(crate) fn pelvic_rotation_tracker(
             pitcher_params.pelvic_break,
         ) {
             if Some(true) == rapier_context.intersection_pair(*pelvis, pelvic_break_sensor) {
-                ev_pitch_stage_transition_event
-                    .send(PitchStageTransitionEvents::PelvisBreak(entity));
+                ev_pitch_stage_transition_event.send(PitchStageTransitionEvents::MaxER(entity));
                 *pitch_stage = PitchStage::ArmAcceleration;
                 info!("transitioning to arm acceleration");
             }
@@ -91,13 +90,13 @@ pub(crate) fn on_pitch_stage_transition_event(
                     }
                 }
             }
-            PitchStageTransitionEvents::PelvisBreak(pitcher_entity) => {
+            PitchStageTransitionEvents::MaxER(pitcher_entity) => {
                 if let Ok(pitcher) = query_pitcher.get_mut(*pitcher_entity) {
                     for (body_part, body_part_entity) in pitcher.body_parts.iter() {
                         if let Ok((mut impulse_joint, transform)) =
                             query_body_part.get_mut(*body_part_entity)
                         {
-                            pitcher.on_pelvis_break(
+                            pitcher.on_max_er(
                                 &mut commands,
                                 body_part,
                                 *body_part_entity,

@@ -6,21 +6,52 @@ pub(crate) fn mark_velo(
     query_arm_part: Query<(&BodyPartMarker, &Velocity)>,
 ) {
     for (pitcher_params, pitch_stage) in query_pitch_stage.iter() {
-        if *pitch_stage != PitchStage::ArmAcceleration {
+        if *pitch_stage < PitchStage::ArmAcceleration {
             return;
         }
         if let Some(wrist) = pitcher_params.body_parts.get(&BodyPartMarker::Wrist) {
             if let Ok((body_part, velo)) = query_arm_part.get(*wrist) {
                 match body_part {
                     BodyPartMarker::Wrist => {
-                        info!("velo: {:?}", velo.linvel.length());
-                        info!("velo direction: {:?}", velo.linvel.normalize())
+                        info!(
+                            "velo: {:?}, direction: {:?}",
+                            velo.linvel.length(),
+                            velo.linvel.normalize()
+                        );
                     }
                     _ => {}
                 }
             }
         }
     }
+}
+
+pub(crate) fn apply_force_shoulder(
+    query_pitcher: Query<(&PitcherParams, &PitchStage)>,
+    mut query_arm_part: Query<(&BodyPartMarker, &Transform, &mut ExternalForce)>,
+) {
+    // for (pitcher_params, pitch_stage) in query_pitcher.iter() {
+    //     if let Some(shoulder) = pitcher_params.body_parts.get(&BodyPartMarker::Shoulder) {
+    //         if let Ok((body_part, transform, mut external_force)) =
+    //             query_arm_part.get_mut(*shoulder)
+    //         {
+    //             match body_part {
+    //                 BodyPartMarker::Shoulder => {
+    //                     if *pitch_stage > PitchStage::ArmAcceleration {
+    //                         *external_force = ExternalForce::at_point(
+    //                             1. * transform.rotation.mul_vec3(Vec3::Y).normalize(),
+    //                             transform.translation,
+    //                             transform.translation,
+    //                         )
+    //                     } else {
+    //                         *external_force = ExternalForce::default();
+    //                     }
+    //                 }
+    //                 _ => {}
+    //             }
+    //         }
+    //     }
+    // }
 }
 
 pub(crate) fn spawn_arms(
@@ -31,7 +62,7 @@ pub(crate) fn spawn_arms(
     let mut params = PitcherParams {
         height: 1.85,
         pitching_arm: PitchingArm::Left,
-        lateral_trunk_tilt: 70. * PI / 180.,
+        lateral_trunk_tilt: 50. * PI / 180.,
         rotation: Quat::from_rotation_y(0.),
         ..default()
     };
@@ -41,6 +72,7 @@ pub(crate) fn spawn_arms(
             PitchStage::default(),
         ))
         .with_children(|children| {
+            // should not make this children
             let core = params.build_core(children);
 
             let pelvis = params.build_pelvis(core, children);
@@ -65,24 +97,13 @@ pub(crate) fn spawn_arms(
             let shoulder = params.build_shoulder(upper_torso, children);
             params.body_parts.insert(BodyPartMarker::Shoulder, shoulder);
 
-            // // arm deceleration trigger for shoulder
-            // let arm_dec_trigger = children
-            //     .spawn((
-            //         Sensor,
-            //         Collider::cuboid(0.001, 0.1, 0.001),
-            //         TransformBundle::from_transform(Transform::from_translation(Vec3::new(
-            //             0.2, // apply pitching arm sign
-            //             1.6, 0.08,
-            //         ))),
-            //     ))
-            //     .id();
-            // params.arm_deceleration_trigger = Some(arm_dec_trigger);
-
             let elbow = params.build_elbow(shoulder, children);
             params.body_parts.insert(BodyPartMarker::Elbow, elbow);
 
             let wrist = params.build_wrist(elbow, children, &mut meshes, &mut materials);
             params.body_parts.insert(BodyPartMarker::Wrist, wrist);
+
+            let ball = params.build_ball(wrist, children, &mut meshes, &mut materials);
         })
         .insert(params);
 }
