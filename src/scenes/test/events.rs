@@ -1,4 +1,4 @@
-use crate::prelude::*;
+use crate::{pitcher, prelude::*};
 
 #[derive(Debug, Event)]
 pub(crate) enum PitchStageTransitionEvents {
@@ -9,24 +9,51 @@ pub(crate) enum PitchStageTransitionEvents {
 
 pub(crate) fn emit_foot_contact(
     mut ev_pitch_stage_transition_event: EventWriter<PitchStageTransitionEvents>,
-    query_pitcher: Query<Entity, With<PitcherParams>>, // there must only one pitcher at a time?
+    mut query_pitcher: Query<(Entity, &mut PitchStage), With<PitcherParams>>, // there must only one pitcher at a time?
 ) {
-    if let Ok(pitcher_entity) = query_pitcher.get_single() {
-        ev_pitch_stage_transition_event
-            .send(PitchStageTransitionEvents::FootContact(pitcher_entity));
+    for (entity, mut pitch_stage) in query_pitcher.iter_mut() {
+        if *pitch_stage != PitchStage::Stride {
+            return;
+        }
+        ev_pitch_stage_transition_event.send(PitchStageTransitionEvents::FootContact(entity));
+        *pitch_stage = PitchStage::ArmCocking;
+        info!("transitioning to arm cocking");
+    }
+}
+
+pub(crate) fn pelvic_rotation_tracker(
+    mut ev_pitch_stage_transition_event: EventWriter<PitchStageTransitionEvents>,
+    rapier_context: Res<RapierContext>,
+    mut query_pitcher: Query<(Entity, &PitcherParams, &mut PitchStage)>,
+) {
+    for (entity, pitcher_params, mut pitch_stage) in query_pitcher.iter_mut() {
+        if *pitch_stage != PitchStage::ArmCocking {
+            return;
+        }
+        if let (Some(pelvis), Some(pelvic_break_sensor)) = (
+            pitcher_params.body_parts.get(&BodyPartMarker::Pelvis),
+            pitcher_params.pelvic_break,
+        ) {
+            if Some(true) == rapier_context.intersection_pair(*pelvis, pelvic_break_sensor) {
+                ev_pitch_stage_transition_event
+                    .send(PitchStageTransitionEvents::PelvisBreak(entity));
+                *pitch_stage = PitchStage::ArmAcceleration;
+                info!("transitioning to arm acceleration");
+            }
+        }
     }
 }
 
 pub(crate) fn on_pitch_stage_transition_event(
     mut ev_pitch_stage_transition_event: EventReader<PitchStageTransitionEvents>,
     mut commands: Commands,
-    query_pitcher: Query<&PitcherParams>,
+    mut query_pitcher: Query<&PitcherParams>,
     mut query_body_part: Query<&mut ImpulseJoint, With<BodyPartMarker>>,
 ) {
     for ev in ev_pitch_stage_transition_event.read() {
         match ev {
             PitchStageTransitionEvents::FootContact(pitcher_entity) => {
-                if let Ok(pitcher) = query_pitcher.get(*pitcher_entity) {
+                if let Ok(pitcher) = query_pitcher.get_mut(*pitcher_entity) {
                     for (body_part, body_part_entity) in pitcher.body_parts.iter() {
                         if let Ok(mut impulse_joint) = query_body_part.get_mut(*body_part_entity) {
                             pitcher.on_foot_contact(
@@ -39,8 +66,19 @@ pub(crate) fn on_pitch_stage_transition_event(
                     }
                 }
             }
-            PitchStageTransitionEvents::PelvisBreak(_) => {
-                // commands.schedule_on_update(break_system);
+            PitchStageTransitionEvents::PelvisBreak(pitcher_entity) => {
+                if let Ok(pitcher) = query_pitcher.get_mut(*pitcher_entity) {
+                    for (body_part, body_part_entity) in pitcher.body_parts.iter() {
+                        if let Ok(mut impulse_joint) = query_body_part.get_mut(*body_part_entity) {
+                            pitcher.on_pelvis_break(
+                                &mut commands,
+                                body_part,
+                                *body_part_entity,
+                                &mut impulse_joint,
+                            );
+                        }
+                    }
+                }
             }
             PitchStageTransitionEvents::Release(_) => {
                 // commands.schedule_on_update(release_system);

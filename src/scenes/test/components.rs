@@ -2,6 +2,10 @@ use bevy::utils::HashMap;
 
 use crate::prelude::*;
 
+#[derive(Debug, Reflect, Clone, Component)]
+#[reflect(Component)]
+pub(crate) struct PelvicBreakTriggerMarker;
+
 #[derive(Debug, Reflect, Clone, Component, Hash, PartialEq, Eq, PartialOrd)]
 #[reflect(Component)]
 pub(crate) enum BodyPartMarker {
@@ -28,7 +32,8 @@ impl PitchingArm {
     }
 }
 
-#[derive(Debug, Clone, Copy, Default)]
+#[derive(Debug, Component, Reflect, Clone, Copy, Default, PartialEq, Eq)]
+#[reflect(Component)]
 pub(crate) enum PitchStage {
     #[default]
     // KneeUp
@@ -47,6 +52,7 @@ pub(crate) struct PitcherParams {
     pub rotation: Quat,
     //
     pub body_parts: HashMap<BodyPartMarker, Entity>,
+    pub pelvic_break: Option<Entity>,
 }
 
 impl Default for PitcherParams {
@@ -58,6 +64,7 @@ impl Default for PitcherParams {
             lateral_trunk_tilt: PI / 2.,
             rotation: Quat::from_rotation_y(0.),
             body_parts,
+            pelvic_break: None,
         }
     }
 }
@@ -297,6 +304,48 @@ impl PitcherParams {
                         1.,
                         0.3,
                     )
+                    .motor_model(JointAxis::AngZ, MotorModel::ForceBased)
+                    .limits(JointAxis::AngX, [-0., 0.])
+                    .limits(JointAxis::AngY, [-0., 0.])
+                    .limits(JointAxis::AngZ, [-PI + 0.01, PI - 0.01])
+                    .build();
+                impulse_joint.data = TypedJoint::GenericJoint(new_joint);
+            }
+            _ => {}
+        }
+    }
+
+    pub(crate) fn on_pelvis_break(
+        &self,
+        commands: &mut Commands,
+        body_part: &BodyPartMarker,
+        entity: Entity,
+        impulse_joint: &mut ImpulseJoint,
+    ) {
+        match body_part {
+            BodyPartMarker::Pelvis => {}
+            BodyPartMarker::Elbow => {
+                let new_joint = GenericJointBuilder::new(JointAxesMask::LIN_AXES)
+                    .local_anchor1(Vec3::new(0., 0.0, -0.8))
+                    .local_anchor2(Vec3::new(0., 0.0, 0.0))
+                    .coupled_axes(JointAxesMask::LIN_AXES)
+                    .motor_position(JointAxis::AngX, 0., 0.9, 0.1)
+                    .motor_position(JointAxis::AngY, 0., 0.9, 0.1)
+                    .motor_model(JointAxis::AngX, MotorModel::ForceBased)
+                    .motor_model(JointAxis::AngY, MotorModel::ForceBased)
+                    .limits(JointAxis::AngX, [-0.01, PI / 2. + 0.01])
+                    .limits(JointAxis::AngY, [-0.01, PI / 2. + 0.01])
+                    .limits(JointAxis::AngZ, [-0., 0.])
+                    .build();
+
+                impulse_joint.data = TypedJoint::GenericJoint(new_joint);
+            }
+            BodyPartMarker::Shoulder => {
+                let new_joint = GenericJointBuilder::new(JointAxesMask::LIN_AXES)
+                    .local_anchor1(Vec3::new(0., 0.0, -0.8))
+                    .local_anchor2(Vec3::new(0., 0.0, 0.0))
+                    .coupled_axes(JointAxesMask::LIN_AXES)
+                    .motor_position(JointAxis::AngZ, 0., 1., 0.1)
                     .motor_model(JointAxis::AngZ, MotorModel::ForceBased)
                     .limits(JointAxis::AngX, [-0., 0.])
                     .limits(JointAxis::AngY, [-0., 0.])

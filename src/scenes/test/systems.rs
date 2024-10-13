@@ -150,14 +150,28 @@ pub(crate) fn spawn_arms(mut commands: Commands) {
         ..default()
     };
     commands
-        .spawn((TransformBundle::from_transform(
-            Transform::from_translation(Vec3::ZERO),
-        ),))
+        .spawn((
+            TransformBundle::from_transform(Transform::from_translation(Vec3::ZERO)),
+            PitchStage::default(),
+        ))
         .with_children(|children| {
             let core = params.build_core(children);
 
             let pelvis = params.build_pelvis(core, children);
             params.body_parts.insert(BodyPartMarker::Pelvis, pelvis);
+
+            // pelvic sensor
+            let pelvic_break = children
+                .spawn((
+                    Sensor,
+                    Collider::cuboid(0.001, 0.1, 0.001),
+                    TransformBundle::from_transform(Transform::from_translation(Vec3::new(
+                        0.2, // apply pitching arm sign
+                        1., 0.08,
+                    ))),
+                ))
+                .id();
+            params.pelvic_break = Some(pelvic_break);
 
             let upper_torso = params.build_upper_torso(pelvis, children);
             params.body_parts.insert(BodyPartMarker::Torso, upper_torso);

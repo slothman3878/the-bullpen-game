@@ -73,7 +73,13 @@ impl Plugin for TestScene {
         )
         .add_systems(
             Update,
-            on_pitch_stage_transition_event.in_set(GameScenesSet::UpdateSet(*self)),
+            (
+                pelvic_rotation_tracker,
+                on_pitch_stage_transition_event,
+                // mark_velo,
+            )
+                .chain()
+                .in_set(GameScenesSet::UpdateSet(*self)),
         );
     }
 }
