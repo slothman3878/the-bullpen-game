@@ -70,19 +70,22 @@ pub(crate) fn on_pitch_stage_transition_event(
     mut ev_pitch_stage_transition_event: EventReader<PitchStageTransitionEvents>,
     mut commands: Commands,
     mut query_pitcher: Query<&PitcherParams>,
-    mut query_body_part: Query<&mut ImpulseJoint, With<BodyPartMarker>>,
+    mut query_body_part: Query<(&mut ImpulseJoint, &Transform), With<BodyPartMarker>>,
 ) {
     for ev in ev_pitch_stage_transition_event.read() {
         match ev {
             PitchStageTransitionEvents::FootContact(pitcher_entity) => {
                 if let Ok(pitcher) = query_pitcher.get_mut(*pitcher_entity) {
                     for (body_part, body_part_entity) in pitcher.body_parts.iter() {
-                        if let Ok(mut impulse_joint) = query_body_part.get_mut(*body_part_entity) {
+                        if let Ok((mut impulse_joint, transform)) =
+                            query_body_part.get_mut(*body_part_entity)
+                        {
                             pitcher.on_foot_contact(
                                 &mut commands,
                                 body_part,
                                 *body_part_entity,
                                 &mut impulse_joint,
+                                transform.translation,
                             );
                         }
                     }
@@ -91,12 +94,15 @@ pub(crate) fn on_pitch_stage_transition_event(
             PitchStageTransitionEvents::PelvisBreak(pitcher_entity) => {
                 if let Ok(pitcher) = query_pitcher.get_mut(*pitcher_entity) {
                     for (body_part, body_part_entity) in pitcher.body_parts.iter() {
-                        if let Ok(mut impulse_joint) = query_body_part.get_mut(*body_part_entity) {
+                        if let Ok((mut impulse_joint, transform)) =
+                            query_body_part.get_mut(*body_part_entity)
+                        {
                             pitcher.on_pelvis_break(
                                 &mut commands,
                                 body_part,
                                 *body_part_entity,
                                 &mut impulse_joint,
+                                transform.translation,
                             );
                         }
                     }
@@ -108,7 +114,9 @@ pub(crate) fn on_pitch_stage_transition_event(
             PitchStageTransitionEvents::MaxIR(pitcher_entity) => {
                 if let Ok(pitcher) = query_pitcher.get_mut(*pitcher_entity) {
                     for (body_part, body_part_entity) in pitcher.body_parts.iter() {
-                        if let Ok(mut impulse_joint) = query_body_part.get_mut(*body_part_entity) {
+                        if let Ok((mut impulse_joint, _)) =
+                            query_body_part.get_mut(*body_part_entity)
+                        {
                             pitcher.on_max_ir(
                                 &mut commands,
                                 body_part,

@@ -86,11 +86,6 @@ impl PitcherParams {
     }
 
     pub(crate) fn build_pelvis(&self, core: Entity, children: &mut ChildBuilder) -> Entity {
-        // let ang_y_range: [f32; 2] = match self.pitching_arm {
-        //     PitchingArm::Left => [-0.01, PI / 2. + 0.01],
-        //     PitchingArm::Right => [-PI / 2. - 0.01, 0.01],
-        // };
-
         let pelvic_joint = GenericJointBuilder::new(JointAxesMask::LIN_AXES)
             .local_anchor1(Vec3::new(0., 1.0, 0.0))
             .local_anchor2(Vec3::new(0., 0.0, 0.0))
@@ -214,7 +209,13 @@ impl PitcherParams {
             .id()
     }
 
-    pub(crate) fn build_wrist(&self, elbow: Entity, children: &mut ChildBuilder) -> Entity {
+    pub(crate) fn build_wrist(
+        &self,
+        elbow: Entity,
+        children: &mut ChildBuilder,
+        meshes: &mut ResMut<Assets<Mesh>>,
+        materials: &mut ResMut<Assets<StandardMaterial>>,
+    ) -> Entity {
         let wrist_joint = GenericJointBuilder::new(JointAxesMask::LIN_AXES)
             .local_anchor1(Vec3::new(0., 0.0, -0.8))
             .local_anchor2(Vec3::new(0., 0.0, 0.0))
@@ -239,6 +240,14 @@ impl PitcherParams {
                 Velocity::default(),
                 BodyPartMarker::Wrist,
             ))
+            .with_children(|children| {
+                children.spawn((PbrBundle {
+                    mesh: meshes.add(Sphere::new(0.037)).into(), // default 0.075
+                    material: materials.add(Color::srgb(0.9, 0.9, 0.9)),
+                    transform: Transform::from_xyz(0.1, 0., 0.),
+                    ..default()
+                },));
+            })
             .id()
     }
 
@@ -248,6 +257,7 @@ impl PitcherParams {
         body_part: &BodyPartMarker,
         entity: Entity,
         impulse_joint: &mut ImpulseJoint,
+        global_translation: Vec3,
     ) {
         match body_part {
             BodyPartMarker::Pelvis => {
@@ -289,7 +299,7 @@ impl PitcherParams {
                     .coupled_axes(JointAxesMask::LIN_AXES)
                     .motor_position(JointAxis::AngX, ang_z_target, 1., 0.01)
                     .motor_model(JointAxis::AngX, MotorModel::ForceBased)
-                    .limits(JointAxis::AngY, [-0.1, 0.1])
+                    .limits(JointAxis::AngY, [-PI + 0.1, 0.1])
                     .limits(JointAxis::AngX, [-0., ang_z_target + 0.1])
                     .limits(JointAxis::AngZ, [-0., 0.])
                     .build();
@@ -313,13 +323,6 @@ impl PitcherParams {
                     .limits(JointAxis::AngZ, [-PI + 0.01, PI - 0.01])
                     .build();
                 impulse_joint.data = TypedJoint::GenericJoint(new_joint);
-
-                // maybe not external impulse, but external force???
-                commands.entity(entity).insert(ExternalImpulse::at_point(
-                    0.1 * Vec3::X,
-                    Vec3::new(-3., 1.6, 0.),
-                    Vec3::new(0., 1.6, 0.),
-                ));
             }
             _ => {}
         }
@@ -331,17 +334,44 @@ impl PitcherParams {
         body_part: &BodyPartMarker,
         entity: Entity,
         impulse_joint: &mut ImpulseJoint,
+        global_translation: Vec3,
     ) {
         match body_part {
-            BodyPartMarker::Pelvis => {}
+            BodyPartMarker::Pelvis => {
+                // let ang_y_range = match self.pitching_arm {
+                //     PitchingArm::Left => [-PI / 2. - 0.01, -PI / 2.],
+                //     PitchingArm::Right => [PI / 2., PI / 2. + 0.01],
+                // };
+
+                // let new_joint = GenericJointBuilder::new(JointAxesMask::LIN_AXES)
+                //     .local_anchor1(Vec3::new(0., 1.0, 0.0))
+                //     .local_anchor2(Vec3::new(0., 0.0, 0.0))
+                //     .coupled_axes(JointAxesMask::LIN_AXES)
+                //     // .motor_position(
+                //     //     JointAxis::AngY,
+                //     //     self.pitching_arm.sign() * -PI / 2.,
+                //     //     1.,
+                //     //     0.01,
+                //     // )
+                //     // .motor_model(JointAxis::AngY, MotorModel::ForceBased)
+                //     // .motor_position(JointAxis::AngZ, 0., 1., 0.1)
+                //     // .motor_model(JointAxis::AngZ, MotorModel::ForceBased)
+                //     .limits(JointAxis::AngZ, [-0., 0.])
+                //     // .limits(JointAxis::AngY, ang_y_range)
+                //     .limits(JointAxis::AngX, [-PI / 6., 0.])
+                //     .build();
+
+                // impulse_joint.data = TypedJoint::GenericJoint(new_joint);
+            }
+            BodyPartMarker::Torso => {}
             BodyPartMarker::Elbow => {
                 let new_joint = GenericJointBuilder::new(JointAxesMask::LIN_AXES)
                     .local_anchor1(Vec3::new(0., 0.0, -0.8))
                     .local_anchor2(Vec3::new(0., 0.0, 0.0))
                     .coupled_axes(JointAxesMask::LIN_AXES)
                     .motor_position(JointAxis::AngX, 0., 0.9, 0.1)
-                    .motor_position(JointAxis::AngY, 0., 0.9, 0.1)
                     .motor_model(JointAxis::AngX, MotorModel::ForceBased)
+                    .motor_position(JointAxis::AngY, 0., 0.9, 0.1)
                     .motor_model(JointAxis::AngY, MotorModel::ForceBased)
                     .limits(JointAxis::AngX, [-0.01, PI / 2. + 0.01])
                     .limits(JointAxis::AngY, [-0.01, PI / 2. + 0.01])
@@ -355,6 +385,8 @@ impl PitcherParams {
                     .local_anchor1(Vec3::new(0., 0.0, -0.8))
                     .local_anchor2(Vec3::new(0., 0.0, 0.0))
                     .coupled_axes(JointAxesMask::LIN_AXES)
+                    .motor_position(JointAxis::AngX, PI, 1., 0.01)
+                    .motor_model(JointAxis::AngX, MotorModel::ForceBased)
                     .motor_position(JointAxis::AngZ, 0., 1., 0.1)
                     .motor_model(JointAxis::AngZ, MotorModel::ForceBased)
                     .limits(JointAxis::AngX, [-0., 0.])
@@ -362,6 +394,13 @@ impl PitcherParams {
                     .limits(JointAxis::AngZ, [-PI + 0.01, PI - 0.01])
                     .build();
                 impulse_joint.data = TypedJoint::GenericJoint(new_joint);
+
+                // info!("global transform {:?}", global_translation);
+                // commands.entity(entity).insert(ExternalImpulse::at_point(
+                //     0.5 * Vec3::Z,
+                //     global_translation,
+                //     global_translation,
+                // ));
             }
             _ => {}
         }
