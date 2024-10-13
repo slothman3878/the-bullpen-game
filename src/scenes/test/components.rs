@@ -313,6 +313,13 @@ impl PitcherParams {
                     .limits(JointAxis::AngZ, [-PI + 0.01, PI - 0.01])
                     .build();
                 impulse_joint.data = TypedJoint::GenericJoint(new_joint);
+
+                // maybe not external impulse, but external force???
+                commands.entity(entity).insert(ExternalImpulse::at_point(
+                    0.1 * Vec3::X,
+                    Vec3::new(-3., 1.6, 0.),
+                    Vec3::new(0., 1.6, 0.),
+                ));
             }
             _ => {}
         }
