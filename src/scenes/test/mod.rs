@@ -76,7 +76,8 @@ impl Plugin for TestScene {
             (
                 pelvic_rotation_tracker,
                 on_pitch_stage_transition_event,
-                // mark_velo,
+                wrist_z_pos_tracker,
+                mark_velo,
             )
                 .chain()
                 .in_set(GameScenesSet::UpdateSet(*self)),

@@ -179,6 +179,19 @@ pub(crate) fn spawn_arms(mut commands: Commands) {
             let shoulder = params.build_shoulder(upper_torso, children);
             params.body_parts.insert(BodyPartMarker::Shoulder, shoulder);
 
+            // // arm deceleration trigger for shoulder
+            // let arm_dec_trigger = children
+            //     .spawn((
+            //         Sensor,
+            //         Collider::cuboid(0.001, 0.1, 0.001),
+            //         TransformBundle::from_transform(Transform::from_translation(Vec3::new(
+            //             0.2, // apply pitching arm sign
+            //             1.6, 0.08,
+            //         ))),
+            //     ))
+            //     .id();
+            // params.arm_deceleration_trigger = Some(arm_dec_trigger);
+
             let elbow = params.build_elbow(shoulder, children);
             params.body_parts.insert(BodyPartMarker::Elbow, elbow);
 

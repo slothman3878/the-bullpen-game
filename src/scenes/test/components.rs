@@ -52,7 +52,9 @@ pub(crate) struct PitcherParams {
     pub rotation: Quat,
     //
     pub body_parts: HashMap<BodyPartMarker, Entity>,
+    // various triggers
     pub pelvic_break: Option<Entity>,
+    pub arm_deceleration_trigger: Option<Entity>,
 }
 
 impl Default for PitcherParams {
@@ -65,6 +67,7 @@ impl Default for PitcherParams {
             rotation: Quat::from_rotation_y(0.),
             body_parts,
             pelvic_break: None,
+            arm_deceleration_trigger: None,
         }
     }
 }
@@ -353,6 +356,49 @@ impl PitcherParams {
                     .build();
                 impulse_joint.data = TypedJoint::GenericJoint(new_joint);
             }
+            _ => {}
+        }
+    }
+
+    pub(crate) fn on_max_ir(
+        &self,
+        commands: &mut Commands,
+        body_part: &BodyPartMarker,
+        entity: Entity,
+        impulse_joint: &mut ImpulseJoint,
+    ) {
+        match body_part {
+            BodyPartMarker::Pelvis => {}
+            BodyPartMarker::Torso => {
+                let ang_z_target = self.pitching_arm.sign() * (PI / 2. - self.lateral_trunk_tilt);
+
+                let new_joint = GenericJointBuilder::new(JointAxesMask::LIN_AXES)
+                    .local_anchor1(Vec3::new(0., 0.6, 0.0))
+                    .local_anchor2(Vec3::new(0., 0.0, 0.0))
+                    .coupled_axes(JointAxesMask::LIN_AXES)
+                    // .motor_position(JointAxis::AngY, -PI / 4., 1., 0.01)
+                    // .motor_model(JointAxis::AngY, MotorModel::ForceBased)
+                    .limits(JointAxis::AngX, [-0., ang_z_target + 0.1])
+                    .limits(JointAxis::AngY, [-PI / 4., 0.1])
+                    .limits(JointAxis::AngZ, [-0., 0.])
+                    .build();
+
+                impulse_joint.data = TypedJoint::GenericJoint(new_joint);
+            }
+            BodyPartMarker::Shoulder => {
+                let new_joint = GenericJointBuilder::new(JointAxesMask::LIN_AXES)
+                    .local_anchor1(Vec3::new(0., 0.0, -0.8))
+                    .local_anchor2(Vec3::new(0., 0.0, 0.0))
+                    .coupled_axes(JointAxesMask::LIN_AXES)
+                    // .motor_position(JointAxis::AngZ, 0., 1., 0.1)
+                    // .motor_model(JointAxis::AngZ, MotorModel::ForceBased)
+                    .limits(JointAxis::AngX, [-0., 0.])
+                    // .limits(JointAxis::AngY, [-0., 0.])
+                    .limits(JointAxis::AngZ, [-PI + 0.01, PI - 0.01])
+                    .build();
+                impulse_joint.data = TypedJoint::GenericJoint(new_joint);
+            }
+            BodyPartMarker::Elbow => {}
             _ => {}
         }
     }
