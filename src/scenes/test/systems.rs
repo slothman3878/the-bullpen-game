@@ -1,13 +1,24 @@
 use crate::prelude::*;
 
 // this is at pevlis break
-pub(crate) fn mark_velo(mut query_arm_part: Query<(&BodyPartMarker, &Velocity)>) {
-    for (body_part, velo) in query_arm_part.iter_mut() {
-        match body_part {
-            BodyPartMarker::Wrist => {
-                info!("velo: {:?}", velo.linvel.length());
+pub(crate) fn mark_velo(
+    query_pitch_stage: Query<(&PitcherParams, &PitchStage)>,
+    query_arm_part: Query<(&BodyPartMarker, &Velocity)>,
+) {
+    for (pitcher_params, pitch_stage) in query_pitch_stage.iter() {
+        if *pitch_stage != PitchStage::ArmAcceleration {
+            return;
+        }
+        if let Some(wrist) = pitcher_params.body_parts.get(&BodyPartMarker::Wrist) {
+            if let Ok((body_part, velo)) = query_arm_part.get(*wrist) {
+                match body_part {
+                    BodyPartMarker::Wrist => {
+                        info!("velo: {:?}", velo.linvel.length());
+                        info!("velo direction: {:?}", velo.linvel.normalize())
+                    }
+                    _ => {}
+                }
             }
-            _ => {}
         }
     }
 }
