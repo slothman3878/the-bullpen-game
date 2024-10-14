@@ -101,13 +101,40 @@ pub(crate) fn spawn_arms(
             let upper_torso = params.build_upper_torso(pelvis, children, torso_transform);
             params.body_parts.insert(BodyPartMarker::Torso, upper_torso);
 
-            // let shoulder = params.build_shoulder(upper_torso, children, Vec3::new(0., 1.6, 0.));
-            // params.body_parts.insert(BodyPartMarker::Shoulder, shoulder);
+            // need to consider the vector from elbow to torso
+            let shoulder_translation = torso_transform.translation + Vec3::new(0., 0., -0.4);
+            // the following two need to an input
+            let elbow_translation =
+                shoulder_translation + 0.3 * (Vec3::new(-0.1, 0.1, -0.3).normalize());
+            let wrist_translation = elbow_translation + 0.3 * Vec3::new(-0.1, 0.3, 0.).normalize();
 
-            // let elbow = params.build_elbow(shoulder, children);
-            // params.body_parts.insert(BodyPartMarker::Elbow, elbow);
+            let shoulder_rotation = Quat::from_rotation_arc(
+                Vec3::X,
+                (elbow_translation - shoulder_translation).normalize(),
+            );
+            let elbow_rotation = Quat::from_rotation_arc(
+                shoulder_rotation.mul_vec3(Vec3::X),
+                (wrist_translation - elbow_translation).normalize(),
+            )
+            .mul_quat(shoulder_rotation);
 
-            // let wrist = params.build_wrist(elbow, children, &mut meshes, &mut materials);
+            let wrist_rotation = elbow_rotation.clone();
+
+            let shoulder_transform =
+                Transform::from_translation(shoulder_translation).with_rotation(shoulder_rotation);
+
+            let shoulder =
+                params.build_shoulder(upper_torso, children, torso_transform, shoulder_transform);
+            params.body_parts.insert(BodyPartMarker::Shoulder, shoulder);
+
+            let elbow_transform =
+                Transform::from_translation(elbow_translation).with_rotation(elbow_rotation);
+            let elbow = params.build_elbow(shoulder, children, shoulder_transform, elbow_transform);
+            params.body_parts.insert(BodyPartMarker::Elbow, elbow);
+
+            // let wrist_transform =
+            //     Transform::from_translation(wrist_translation).with_rotation(wrist_rotation);
+            // let wrist = params.build_wrist(elbow, children, elbow_transform, wrist_transform);
             // params.body_parts.insert(BodyPartMarker::Wrist, wrist);
 
             // let ball = params.build_ball(wrist, children, &mut meshes, &mut materials);
