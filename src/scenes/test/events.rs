@@ -96,13 +96,13 @@ pub(crate) fn on_pitch_stage_transition_event(
                         if let Ok((mut impulse_joint, transform)) =
                             query_body_part.get_mut(*body_part_entity)
                         {
-                            // pitcher.on_max_er(
-                            //     &mut commands,
-                            //     body_part,
-                            //     *body_part_entity,
-                            //     &mut impulse_joint,
-                            //     transform.translation,
-                            // );
+                            pitcher.on_max_er(
+                                &mut commands,
+                                body_part,
+                                *body_part_entity,
+                                &mut impulse_joint,
+                                transform.translation,
+                            );
                         }
                     }
                 }

@@ -73,9 +73,13 @@ pub(crate) fn spawn_arms(
         ))
         .with_children(|children| {
             // should not make this children
-            let core = params.build_core(children);
+            let core_transform = Transform::from_translation(Vec3::new(0., 0., 0.));
+            let core = params.build_core(children, core_transform);
 
-            let pelvis = params.build_pelvis(core, children);
+            let pelvic_transform =
+                Transform::from_translation(core_transform.translation + Vec3::new(0., 1., 0.))
+                    .with_rotation(Quat::from_rotation_y(PI / 2.));
+            let pelvis = params.build_pelvis(core, children, pelvic_transform);
             params.body_parts.insert(BodyPartMarker::Pelvis, pelvis);
 
             // pelvic sensor
@@ -91,19 +95,22 @@ pub(crate) fn spawn_arms(
                 .id();
             params.pelvic_break = Some(pelvic_break);
 
-            let upper_torso = params.build_upper_torso(pelvis, children);
+            let torso_transform =
+                Transform::from_translation(pelvic_transform.translation + Vec3::new(0., 0.6, 0.))
+                    .with_rotation(Quat::from_rotation_y(PI / 2.));
+            let upper_torso = params.build_upper_torso(pelvis, children, torso_transform);
             params.body_parts.insert(BodyPartMarker::Torso, upper_torso);
 
-            let shoulder = params.build_shoulder(upper_torso, children);
-            params.body_parts.insert(BodyPartMarker::Shoulder, shoulder);
+            // let shoulder = params.build_shoulder(upper_torso, children, Vec3::new(0., 1.6, 0.));
+            // params.body_parts.insert(BodyPartMarker::Shoulder, shoulder);
 
-            let elbow = params.build_elbow(shoulder, children);
-            params.body_parts.insert(BodyPartMarker::Elbow, elbow);
+            // let elbow = params.build_elbow(shoulder, children);
+            // params.body_parts.insert(BodyPartMarker::Elbow, elbow);
 
-            let wrist = params.build_wrist(elbow, children, &mut meshes, &mut materials);
-            params.body_parts.insert(BodyPartMarker::Wrist, wrist);
+            // let wrist = params.build_wrist(elbow, children, &mut meshes, &mut materials);
+            // params.body_parts.insert(BodyPartMarker::Wrist, wrist);
 
-            let ball = params.build_ball(wrist, children, &mut meshes, &mut materials);
+            // let ball = params.build_ball(wrist, children, &mut meshes, &mut materials);
         })
         .insert(params);
 }
