@@ -88,10 +88,6 @@ impl PitcherParams {
                 ColliderMassProperties::Density(10000.0),
                 Collider::cuboid(0.1, 0.1, 0.1),
                 TransformBundle::from_transform(transform),
-                // Velocity {
-                //     linvel: Vec3::new(0., 0., 10.),
-                //     ..default()
-                // },
             ))
             .id()
     }
@@ -103,7 +99,7 @@ impl PitcherParams {
         transform: Transform,
     ) -> Entity {
         let pelvic_joint = GenericJointBuilder::new(JointAxesMask::LIN_AXES)
-            .local_anchor1(Vec3::new(0., 1.0, 0.0))
+            .local_anchor1(Vec3::new(0., 0.5, 0.0))
             .local_anchor2(Vec3::new(0., 0.0, 0.0))
             .coupled_axes(JointAxesMask::LIN_AXES)
             .motor_model(JointAxis::AngX, MotorModel::ForceBased)
@@ -126,7 +122,7 @@ impl PitcherParams {
     }
 
     pub(crate) fn build_upper_torso(
-        &self,
+        &mut self,
         pelvis: Entity,
         commands: &mut Commands,
         transform: Transform,
@@ -200,7 +196,7 @@ impl PitcherParams {
         commands
             .spawn((
                 RigidBody::Dynamic,
-                GravityScale(0.),
+                // GravityScale(0.),
                 Collider::cuboid(0.05, 0.05, 0.05),
                 ColliderMassProperties::Density(1000.0),
                 TransformBundle::from_transform(transform),
@@ -228,7 +224,7 @@ impl PitcherParams {
         commands
             .spawn((
                 RigidBody::Dynamic,
-                GravityScale(0.),
+                // GravityScale(0.),
                 Collider::cuboid(0.05, 0.05, 0.05),
                 ColliderMassProperties::Density(1000.0),
                 TransformBundle::from_transform(transform),
@@ -282,7 +278,10 @@ impl PitcherParams {
     ) {
         match body_part {
             BodyPartMarker::Core => {
-                // commands.entity(entity).insert();
+                // commands.entity(entity).insert(Velocity {
+                //     linvel: Vec3::new(0., -1., 10.),
+                //     ..default()
+                // });
             }
             _ => {}
         }
@@ -301,7 +300,7 @@ impl PitcherParams {
             }
             BodyPartMarker::Pelvis => {
                 let new_joint = GenericJointBuilder::new(JointAxesMask::LIN_AXES)
-                    .local_anchor1(Vec3::new(0., 1.0, 0.0))
+                    .local_anchor1(Vec3::new(0., 0.5, 0.0))
                     .local_anchor2(Vec3::new(0., 0.0, 0.0))
                     .coupled_axes(JointAxesMask::LIN_AXES)
                     .motor_position(
@@ -363,7 +362,7 @@ impl PitcherParams {
         match body_part {
             BodyPartMarker::Pelvis => {
                 let new_joint = GenericJointBuilder::new(JointAxesMask::LIN_AXES)
-                    .local_anchor1(Vec3::new(0., 1.0, 0.0))
+                    .local_anchor1(Vec3::new(0., 0.5, 0.0))
                     .local_anchor2(Vec3::new(0., 0.0, 0.0))
                     .coupled_axes(JointAxesMask::LIN_AXES)
                     .limits(JointAxis::AngX, [-0.1, PI / 4.])

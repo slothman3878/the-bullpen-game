@@ -39,28 +39,30 @@ pub(crate) fn spawn_arms(
         .id();
 
     // should not make this children
-    let core_transform = Transform::from_translation(Vec3::new(0., 0., 0.));
+    let core_transform = Transform::from_translation(Vec3::new(0., 0.5, 0.));
     let core = params.build_core(&mut commands, core_transform);
     params.body_parts.insert(BodyPartMarker::Core, core);
 
+    commands.entity(core).with_children(|children| {
+        // pelvic sensor
+        let pelvic_break = children
+            .spawn((
+                Sensor,
+                Collider::cuboid(0.001, 0.1, 0.001),
+                TransformBundle::from_transform(Transform::from_translation(Vec3::new(
+                    0.2, // apply pitching arm sign
+                    0.5, 0.,
+                ))),
+            ))
+            .id();
+        params.pelvic_break = Some(pelvic_break);
+    });
+
     let pelvic_transform =
-        Transform::from_translation(core_transform.translation + Vec3::new(0., 1., 0.))
+        Transform::from_translation(core_transform.translation + Vec3::new(0., 0.5, 0.))
             .with_rotation(Quat::from_rotation_y(PI / 2.));
     let pelvis = params.build_pelvis(core, &mut commands, pelvic_transform);
     params.body_parts.insert(BodyPartMarker::Pelvis, pelvis);
-
-    // pelvic sensor
-    let pelvic_break = commands
-        .spawn((
-            Sensor,
-            Collider::cuboid(0.001, 0.1, 0.001),
-            TransformBundle::from_transform(Transform::from_translation(Vec3::new(
-                0.2, // apply pitching arm sign
-                1., 0.08,
-            ))),
-        ))
-        .id();
-    params.pelvic_break = Some(pelvic_break);
 
     let torso_transform =
         Transform::from_translation(pelvic_transform.translation + Vec3::new(0., 0.6, 0.))
