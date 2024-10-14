@@ -76,7 +76,7 @@ pub(crate) fn on_pitch_stage_transition_event(
             PitchStageTransitionEvents::FootContact(pitcher_entity) => {
                 if let Ok(pitcher) = query_pitcher.get_mut(*pitcher_entity) {
                     for (body_part, body_part_entity) in pitcher.body_parts.iter() {
-                        if let Ok((mut impulse_joint, transform)) =
+                        if let Ok((mut impulse_joint, _transform)) =
                             query_body_part.get_mut(*body_part_entity)
                         {
                             pitcher.on_foot_contact(
@@ -84,7 +84,6 @@ pub(crate) fn on_pitch_stage_transition_event(
                                 body_part,
                                 *body_part_entity,
                                 &mut impulse_joint,
-                                transform.translation,
                             );
                         }
                     }
@@ -116,12 +115,12 @@ pub(crate) fn on_pitch_stage_transition_event(
                         if let Ok((mut impulse_joint, _)) =
                             query_body_part.get_mut(*body_part_entity)
                         {
-                            // pitcher.on_max_ir(
-                            //     &mut commands,
-                            //     body_part,
-                            //     *body_part_entity,
-                            //     &mut impulse_joint,
-                            // );
+                            pitcher.on_max_ir(
+                                &mut commands,
+                                body_part,
+                                *body_part_entity,
+                                &mut impulse_joint,
+                            );
                         }
                     }
                 }

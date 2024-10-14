@@ -72,72 +72,58 @@ pub(crate) fn spawn_arms(
             PitchStage::default(),
         ))
         .with_children(|children| {
-            // should not make this children
-            let core_transform = Transform::from_translation(Vec3::new(0., 0., 0.));
-            let core = params.build_core(children, core_transform);
-
-            let pelvic_transform =
-                Transform::from_translation(core_transform.translation + Vec3::new(0., 1., 0.))
-                    .with_rotation(Quat::from_rotation_y(PI / 2.));
-            let pelvis = params.build_pelvis(core, children, pelvic_transform);
-            params.body_parts.insert(BodyPartMarker::Pelvis, pelvis);
-
-            // pelvic sensor
-            let pelvic_break = children
-                .spawn((
-                    Sensor,
-                    Collider::cuboid(0.001, 0.1, 0.001),
-                    TransformBundle::from_transform(Transform::from_translation(Vec3::new(
-                        0.2, // apply pitching arm sign
-                        1., 0.08,
-                    ))),
-                ))
-                .id();
-            params.pelvic_break = Some(pelvic_break);
-
-            let torso_transform =
-                Transform::from_translation(pelvic_transform.translation + Vec3::new(0., 0.6, 0.))
-                    .with_rotation(Quat::from_rotation_y(PI / 2.));
-            let upper_torso = params.build_upper_torso(pelvis, children, torso_transform);
-            params.body_parts.insert(BodyPartMarker::Torso, upper_torso);
-
-            // need to consider the vector from elbow to torso
-            let shoulder_translation = torso_transform.translation + Vec3::new(0., 0., -0.4);
-            // the following two need to an input
-            let elbow_translation =
-                shoulder_translation + 0.3 * (Vec3::new(-0.1, 0.1, -0.3).normalize());
-            let wrist_translation = elbow_translation + 0.3 * Vec3::new(-0.1, 0.3, 0.).normalize();
-
-            let shoulder_rotation = Quat::from_rotation_arc(
-                Vec3::X,
-                (elbow_translation - shoulder_translation).normalize(),
-            );
-            let elbow_rotation = Quat::from_rotation_arc(
-                shoulder_rotation.mul_vec3(Vec3::X),
-                (wrist_translation - elbow_translation).normalize(),
-            )
-            .mul_quat(shoulder_rotation);
-
-            let wrist_rotation = elbow_rotation.clone();
-
-            let shoulder_transform =
-                Transform::from_translation(shoulder_translation).with_rotation(shoulder_rotation);
-
-            let shoulder =
-                params.build_shoulder(upper_torso, children, torso_transform, shoulder_transform);
-            params.body_parts.insert(BodyPartMarker::Shoulder, shoulder);
-
-            let elbow_transform =
-                Transform::from_translation(elbow_translation).with_rotation(elbow_rotation);
-            let elbow = params.build_elbow(shoulder, children, shoulder_transform, elbow_transform);
-            params.body_parts.insert(BodyPartMarker::Elbow, elbow);
-
-            // let wrist_transform =
-            //     Transform::from_translation(wrist_translation).with_rotation(wrist_rotation);
-            // let wrist = params.build_wrist(elbow, children, elbow_transform, wrist_transform);
-            // params.body_parts.insert(BodyPartMarker::Wrist, wrist);
-
             // let ball = params.build_ball(wrist, children, &mut meshes, &mut materials);
         })
         .insert(params);
+
+    // should not make this children
+    let core_transform = Transform::from_translation(Vec3::new(0., 0., 0.));
+    let core = params.build_core(children, core_transform);
+
+    let pelvic_transform =
+        Transform::from_translation(core_transform.translation + Vec3::new(0., 1., 0.))
+            .with_rotation(Quat::from_rotation_y(PI / 2.));
+    let pelvis = params.build_pelvis(core, children, pelvic_transform);
+    params.body_parts.insert(BodyPartMarker::Pelvis, pelvis);
+
+    // pelvic sensor
+    let pelvic_break = children
+        .spawn((
+            Sensor,
+            Collider::cuboid(0.001, 0.1, 0.001),
+            TransformBundle::from_transform(Transform::from_translation(Vec3::new(
+                0.2, // apply pitching arm sign
+                1., 0.08,
+            ))),
+        ))
+        .id();
+    params.pelvic_break = Some(pelvic_break);
+
+    let torso_transform =
+        Transform::from_translation(pelvic_transform.translation + Vec3::new(0., 0.6, 0.))
+            .with_rotation(Quat::from_rotation_y(PI / 2.));
+    let upper_torso = params.build_upper_torso(pelvis, children, torso_transform);
+    params.body_parts.insert(BodyPartMarker::Torso, upper_torso);
+
+    // need to consider the vector from elbow to torso
+    let shoulder_translation = torso_transform.translation + Vec3::new(0., 0., -0.4);
+    // the following two need to an input
+    let elbow_translation = shoulder_translation + Vec3::new(0., 0., -0.3);
+    let wrist_translation = elbow_translation + Vec3::new(0., 0., -0.3);
+
+    let shoulder_transform = Transform::from_translation(shoulder_translation)
+        .with_rotation(Quat::from_rotation_y(PI / 2.));
+    let shoulder =
+        params.build_shoulder(upper_torso, children, torso_transform, shoulder_transform);
+    params.body_parts.insert(BodyPartMarker::Shoulder, shoulder);
+
+    let elbow_transform = Transform::from_translation(elbow_translation)
+        .with_rotation(Quat::from_rotation_y(PI / 2.));
+    let elbow = params.build_elbow(shoulder, children, shoulder_transform, elbow_transform);
+    params.body_parts.insert(BodyPartMarker::Elbow, elbow);
+
+    let wrist_transform = Transform::from_translation(wrist_translation)
+        .with_rotation(Quat::from_rotation_y(PI / 2.));
+    let wrist = params.build_wrist(elbow, children, elbow_transform, wrist_transform);
+    params.body_parts.insert(BodyPartMarker::Wrist, wrist);
 }
