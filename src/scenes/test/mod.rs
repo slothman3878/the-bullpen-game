@@ -65,6 +65,7 @@ impl Plugin for TestScene {
             (
                 // max_er.run_if(input_just_released(KeyCode::KeyR)),
                 // release.run_if(input_just_released(MouseButton::Left)),
+                emit_knee_up.run_if(input_just_released(KeyCode::KeyQ)),
                 emit_foot_contact.run_if(input_just_released(KeyCode::KeyR)),
                 // mark_velo.run_if(input_just_released(KeyCode::KeyM)), // push_shoulder.run_if(input_pressed(MouseButton::Left)),
             )

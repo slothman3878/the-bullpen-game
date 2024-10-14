@@ -2,10 +2,25 @@ use crate::{pitcher, prelude::*};
 
 #[derive(Debug, Event)]
 pub(crate) enum PitchStageTransitionEvents {
+    KneeUp(Entity),
     FootContact(Entity),
     MaxER(Entity),
     Release(Entity),
     MaxIR(Entity),
+}
+
+pub(crate) fn emit_knee_up(
+    mut ev_pitch_stage_transition_event: EventWriter<PitchStageTransitionEvents>,
+    mut query_pitcher: Query<(Entity, &mut PitchStage), With<PitcherParams>>, // there must only one pitcher at a time?
+) {
+    for (entity, mut pitch_stage) in query_pitcher.iter_mut() {
+        if *pitch_stage != PitchStage::WindUp {
+            return;
+        }
+        ev_pitch_stage_transition_event.send(PitchStageTransitionEvents::KneeUp(entity));
+        *pitch_stage = PitchStage::Stride;
+        info!("transitioning to stride");
+    }
 }
 
 pub(crate) fn emit_foot_contact(
@@ -73,6 +88,22 @@ pub(crate) fn on_pitch_stage_transition_event(
 ) {
     for ev in ev_pitch_stage_transition_event.read() {
         match ev {
+            PitchStageTransitionEvents::KneeUp(pitcher_entity) => {
+                if let Ok(pitcher) = query_pitcher.get_mut(*pitcher_entity) {
+                    for (body_part, body_part_entity) in pitcher.body_parts.iter() {
+                        if let Ok((mut impulse_joint, _transform)) =
+                            query_body_part.get_mut(*body_part_entity)
+                        {
+                            pitcher.on_knee_up(
+                                &mut commands,
+                                body_part,
+                                *body_part_entity,
+                                &mut impulse_joint,
+                            );
+                        }
+                    }
+                }
+            }
             PitchStageTransitionEvents::FootContact(pitcher_entity) => {
                 if let Ok(pitcher) = query_pitcher.get_mut(*pitcher_entity) {
                     for (body_part, body_part_entity) in pitcher.body_parts.iter() {
@@ -101,6 +132,14 @@ pub(crate) fn on_pitch_stage_transition_event(
                                 *body_part_entity,
                                 &mut impulse_joint,
                                 transform.translation,
+                            );
+                        }
+                        if let Some(ball) = pitcher.ball {
+                            commands.entity(ball).remove::<ImpulseJoint>().insert(
+                                ExternalImpulse {
+                                    impulse: Vec3::new(0., 0., 3.),
+                                    ..default()
+                                },
                             );
                         }
                     }

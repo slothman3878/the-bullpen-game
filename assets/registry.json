@@ -15212,6 +15212,7 @@
       "isResource": false,
       "long_name": "the_bullpen_game::scenes::test::components::BodyPartMarker",
       "oneOf": [
+        "Core",
         "Pelvis",
         "Torso",
         "Shoulder",
