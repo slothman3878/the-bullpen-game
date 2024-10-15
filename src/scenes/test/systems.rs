@@ -50,8 +50,9 @@ pub(crate) fn spawn_arms(
                 Sensor,
                 Collider::cuboid(0.001, 0.1, 0.001),
                 TransformBundle::from_transform(Transform::from_translation(Vec3::new(
-                    0.2, // apply pitching arm sign
-                    0.5, 0.,
+                    params.pitching_arm.sign() * 0.2, // apply pitching arm sign
+                    0.5,
+                    0.,
                 ))),
             ))
             .id();
@@ -60,13 +61,13 @@ pub(crate) fn spawn_arms(
 
     let pelvic_transform =
         Transform::from_translation(core_transform.translation + Vec3::new(0., 0.5, 0.))
-            .with_rotation(Quat::from_rotation_y(PI / 2.));
+            .with_rotation(Quat::from_rotation_y(params.pitching_arm.sign() * PI / 2.));
     let pelvis = params.build_pelvis(core, &mut commands, pelvic_transform);
     params.body_parts.insert(BodyPartMarker::Pelvis, pelvis);
 
     let torso_transform =
         Transform::from_translation(pelvic_transform.translation + Vec3::new(0., 0.6, 0.))
-            .with_rotation(Quat::from_rotation_y(PI / 2.));
+            .with_rotation(Quat::from_rotation_y(params.pitching_arm.sign() * PI / 2.));
     let upper_torso = params.build_upper_torso(pelvis, &mut commands, torso_transform);
     params.body_parts.insert(BodyPartMarker::Torso, upper_torso);
 
@@ -77,22 +78,22 @@ pub(crate) fn spawn_arms(
     let wrist_translation = elbow_translation + Vec3::new(0., 0., -0.3);
 
     let shoulder_transform = Transform::from_translation(shoulder_translation)
-        .with_rotation(Quat::from_rotation_y(PI / 2.));
+        .with_rotation(Quat::from_rotation_y(params.pitching_arm.sign() * PI / 2.));
     let shoulder = params.build_shoulder(upper_torso, &mut commands, shoulder_transform);
     params.body_parts.insert(BodyPartMarker::Shoulder, shoulder);
 
     let elbow_transform = Transform::from_translation(elbow_translation)
-        .with_rotation(Quat::from_rotation_y(PI / 2.));
+        .with_rotation(Quat::from_rotation_y(params.pitching_arm.sign() * PI / 2.));
     let elbow = params.build_elbow(shoulder, &mut commands, elbow_transform);
     params.body_parts.insert(BodyPartMarker::Elbow, elbow);
 
     let wrist_transform = Transform::from_translation(wrist_translation)
-        .with_rotation(Quat::from_rotation_y(PI / 2.));
+        .with_rotation(Quat::from_rotation_y(params.pitching_arm.sign() * PI / 2.));
     let wrist = params.build_wrist(elbow, &mut commands, wrist_transform);
     params.body_parts.insert(BodyPartMarker::Wrist, wrist);
 
     let ball_transfomr = Transform::from_translation(wrist_translation + Vec3::new(0., 0., -0.05))
-        .with_rotation(Quat::from_rotation_y(PI / 2.));
+        .with_rotation(Quat::from_rotation_y(params.pitching_arm.sign() * PI / 2.));
     let ball = params.build_ball(
         wrist,
         &mut commands,

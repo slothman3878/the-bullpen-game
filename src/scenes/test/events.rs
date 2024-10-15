@@ -134,14 +134,6 @@ pub(crate) fn on_pitch_stage_transition_event(
                                 transform.translation,
                             );
                         }
-                        if let Some(ball) = pitcher.ball {
-                            commands.entity(ball).remove::<ImpulseJoint>().insert(
-                                ExternalImpulse {
-                                    impulse: Vec3::new(0., 0., 1.),
-                                    ..default()
-                                },
-                            );
-                        }
                     }
                 }
             }
@@ -159,6 +151,14 @@ pub(crate) fn on_pitch_stage_transition_event(
                                 body_part,
                                 *body_part_entity,
                                 &mut impulse_joint,
+                            );
+                        }
+                        if let Some(ball) = pitcher.ball {
+                            commands.entity(ball).remove::<ImpulseJoint>().insert(
+                                ExternalImpulse {
+                                    impulse: 5. * Vec3::new(0., 0., 1.),
+                                    ..default()
+                                },
                             );
                         }
                     }
