@@ -339,8 +339,8 @@ impl PitcherParams {
                 let ang_z_target = self.pitching_arm.sign() * (PI / 2. - self.lateral_trunk_tilt);
 
                 let ang_y_range = match self.pitching_arm {
-                    PitchingArm::Left => [-PI / 6., 0.1],
-                    PitchingArm::Right => [-0.1, PI / 6.],
+                    PitchingArm::Left => [-PI / 6., 1.],
+                    PitchingArm::Right => [-1., PI / 6.],
                 };
                 let ang_z_range = match self.pitching_arm {
                     PitchingArm::Left => [-0., ang_z_target],
@@ -356,6 +356,13 @@ impl PitcherParams {
                         ang_z_target, // self.pitching_arm.sign() * PI / 2.,
                         200.,
                         1.,
+                    )
+                    .motor_model(JointAxis::AngZ, MotorModel::ForceBased)
+                    .motor_position(
+                        JointAxis::AngY,
+                        0., // self.pitching_arm.sign() * PI / 2.,
+                        200.,
+                        0.1,
                     )
                     .motor_model(JointAxis::AngZ, MotorModel::ForceBased)
                     .limits(JointAxis::AngX, [-0.1, 0.1])
@@ -391,12 +398,18 @@ impl PitcherParams {
                     .local_anchor2(Vec3::new(0., 0.0, 0.0))
                     .coupled_axes(JointAxesMask::LIN_AXES)
                     .motor_position(
-                        JointAxis::AngX,
-                        PI / 4., // arm dependent
-                        800.,
-                        0.01,
+                        JointAxis::AngY,
+                        self.pitching_arm.sign() * 0.1, // arm dependent
+                        200.,
+                        1.,
                     )
-                    .motor_model(JointAxis::AngY, MotorModel::ForceBased)
+                    // .motor_position(
+                    //     JointAxis::AngX,
+                    //     PI / 4., // arm dependent
+                    //     800.,
+                    //     0.01,
+                    // )
+                    // .motor_model(JointAxis::AngY, MotorModel::ForceBased)
                     .limits(JointAxis::AngX, [-0., PI / 4.])
                     .limits(JointAxis::AngY, ang_y_range)
                     .limits(JointAxis::AngZ, [-0., 0.])
@@ -421,8 +434,8 @@ impl PitcherParams {
         match body_part {
             BodyPartMarker::Pelvis => {
                 let ang_y_range = match self.pitching_arm {
-                    PitchingArm::Left => [-0.1, 0.],
-                    PitchingArm::Right => [0., 0.1],
+                    PitchingArm::Left => [-0.1, 1.],
+                    PitchingArm::Right => [-1., 0.1],
                 };
 
                 let new_joint = GenericJointBuilder::new(JointAxesMask::LIN_AXES)
@@ -430,12 +443,18 @@ impl PitcherParams {
                     .local_anchor2(Vec3::new(0., 0.0, 0.0))
                     .coupled_axes(JointAxesMask::LIN_AXES)
                     .motor_position(
-                        JointAxis::AngX,
-                        PI / 4., // arm dependent
-                        800.,
-                        0.01,
+                        JointAxis::AngY,
+                        self.pitching_arm.sign() * 0.1, // arm dependent
+                        200.,
+                        1.,
                     )
-                    .motor_model(JointAxis::AngY, MotorModel::ForceBased)
+                    // .motor_position(
+                    //     JointAxis::AngX,
+                    //     PI / 4., // arm dependent
+                    //     800.,
+                    //     0.01,
+                    // )
+                    // .motor_model(JointAxis::AngY, MotorModel::ForceBased)
                     .limits(JointAxis::AngX, [-0., PI / 4.])
                     .limits(JointAxis::AngY, ang_y_range)
                     .limits(JointAxis::AngZ, [-0., 0.])
