@@ -26,8 +26,8 @@ pub(crate) fn spawn_arms(
 ) {
     let mut params = PitcherParams {
         height: 1.85,
-        pitching_arm: PitchingArm::Right,
-        lateral_trunk_tilt: 30. * PI / 180.,
+        pitching_arm: PitchingArm::Left,
+        lateral_trunk_tilt: 45. * PI / 180.,
         rotation: Quat::from_rotation_y(0.),
         ..default()
     };
@@ -50,7 +50,7 @@ pub(crate) fn spawn_arms(
                 Sensor,
                 Collider::cuboid(0.001, 0.1, 0.001),
                 TransformBundle::from_transform(Transform::from_translation(Vec3::new(
-                    params.pitching_arm.sign() * 0.2, // apply pitching arm sign
+                    params.pitching_arm.sign() * 0.15, // apply pitching arm sign
                     0.5,
                     0.,
                 ))),

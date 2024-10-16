@@ -156,7 +156,7 @@ pub(crate) fn on_pitch_stage_transition_event(
                         if let Some(ball) = pitcher.ball {
                             commands.entity(ball).remove::<ImpulseJoint>().insert(
                                 ExternalImpulse {
-                                    impulse: 5. * Vec3::new(0., 0., 1.),
+                                    impulse: 4. * (Vec3::new(0., 0., 1.)).normalize(), // 4. ~ 5.
                                     ..default()
                                 },
                             );
