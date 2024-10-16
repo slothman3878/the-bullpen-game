@@ -1,3 +1,5 @@
+use bevy_rapier3d::na::balancing;
+
 use crate::prelude::*;
 
 // this is at pevlis break
@@ -38,9 +40,13 @@ pub(crate) fn spawn_arms(
         ))
         .id();
 
+    let balance_weight_transform =
+        Transform::from_translation(Vec3::new(0., params.leg_length - params.torso_drop, 0.));
+    let balance_weight = params.build_balance_weight(&mut commands, balance_weight_transform);
+
     // should not make this children
-    let core_transform = Transform::from_translation(Vec3::new(0., 0.5, 0.));
-    let core = params.build_core(&mut commands, core_transform);
+    let core_transform = Transform::from_translation(Vec3::new(0., params.leg_length, 0.));
+    let core = params.build_core(balance_weight, &mut commands, core_transform);
     params.body_parts.insert(BodyPartMarker::Core, core);
 
     commands.entity(core).with_children(|children| {
@@ -51,7 +57,7 @@ pub(crate) fn spawn_arms(
                 Collider::cuboid(0.001, 0.1, 0.001),
                 TransformBundle::from_transform(Transform::from_translation(Vec3::new(
                     params.pitching_arm.sign() * 0.15, // apply pitching arm sign
-                    0.5,
+                    params.waist_length,
                     0.,
                 ))),
             ))
@@ -59,23 +65,25 @@ pub(crate) fn spawn_arms(
         params.pelvic_break = Some(pelvic_break);
     });
 
-    let pelvic_transform =
-        Transform::from_translation(core_transform.translation + Vec3::new(0., 0.5, 0.))
-            .with_rotation(Quat::from_rotation_y(params.pitching_arm.sign() * PI / 2.));
+    let pelvic_transform = Transform::from_translation(
+        core_transform.translation + Vec3::new(0., params.waist_length, 0.),
+    )
+    .with_rotation(Quat::from_rotation_y(params.pitching_arm.sign() * PI / 2.));
     let pelvis = params.build_pelvis(core, &mut commands, pelvic_transform);
     params.body_parts.insert(BodyPartMarker::Pelvis, pelvis);
 
-    let torso_transform =
-        Transform::from_translation(pelvic_transform.translation + Vec3::new(0., 0.6, 0.))
-            .with_rotation(Quat::from_rotation_y(params.pitching_arm.sign() * PI / 2.));
+    let torso_transform = Transform::from_translation(
+        pelvic_transform.translation + Vec3::new(0., params.chest_length, 0.),
+    )
+    .with_rotation(Quat::from_rotation_y(params.pitching_arm.sign() * PI / 2.));
     let upper_torso = params.build_upper_torso(pelvis, &mut commands, torso_transform);
     params.body_parts.insert(BodyPartMarker::Torso, upper_torso);
 
     // need to consider the vector from elbow to torso
     let shoulder_translation = torso_transform.translation + Vec3::new(0., 0., -0.4);
     // the following two need to an input
-    let elbow_translation = shoulder_translation + Vec3::new(0., 0., -0.3);
-    let wrist_translation = elbow_translation + Vec3::new(0., 0., -0.3);
+    let elbow_translation = shoulder_translation + Vec3::new(0., 0., -params.upper_arm_length);
+    let wrist_translation = elbow_translation + Vec3::new(0., 0., -params.forearm_length);
 
     let shoulder_transform = Transform::from_translation(shoulder_translation)
         .with_rotation(Quat::from_rotation_y(params.pitching_arm.sign() * PI / 2.));
