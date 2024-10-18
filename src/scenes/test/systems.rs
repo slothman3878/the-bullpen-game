@@ -1,5 +1,3 @@
-use bevy_rapier3d::na::balancing;
-
 use crate::prelude::*;
 
 // this is at pevlis break
@@ -27,12 +25,12 @@ pub(crate) fn spawn_arms(
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     let mut params = PitcherParams {
-        height: 1.85,
         pitching_arm: PitchingArm::Left,
         lateral_trunk_tilt: 45. * PI / 180.,
         rotation: Quat::from_rotation_y(0.),
         ..default()
     };
+    let distance_from_ground: f32 = DISTANCE_CORE_HIP - 0.1;
     let pitcher = commands
         .spawn((
             TransformBundle::from_transform(Transform::from_translation(Vec3::ZERO)),
@@ -43,14 +41,18 @@ pub(crate) fn spawn_arms(
     let balance_weight_transform =
         Transform::from_translation(Vec3::new(0., params.leg_length - params.torso_drop, 0.));
     let balance_weight = params.build_balance_weight(&mut commands, balance_weight_transform);
+    params.balance_weight = Some(balance_weight);
 
     // should not make this children
-    let core_transform = Transform::from_translation(Vec3::new(0., params.leg_length, 0.));
+    let core_transform = Transform::from_translation(
+        Vec3::new(0., params.leg_length, 0.) + Vec3::new(0., distance_from_ground, 0.),
+    );
     let core = params.build_core(balance_weight, &mut commands, core_transform);
     params.body_parts.insert(BodyPartMarker::Core, core);
 
-    let back_hip_transform =
-        Transform::from_translation(core_transform.translation - Vec3::new(0., 0.2, 0.));
+    let back_hip_transform = Transform::from_translation(
+        core_transform.translation - Vec3::new(0., DISTANCE_CORE_HIP, 0.),
+    );
     let back_hip = params.build_back_hip(core, &mut commands, back_hip_transform);
     params.body_parts.insert(BodyPartMarker::BackHip, back_hip);
 
@@ -93,7 +95,8 @@ pub(crate) fn spawn_arms(
     params.body_parts.insert(BodyPartMarker::Torso, upper_torso);
 
     // need to consider the vector from elbow to torso
-    let shoulder_translation = torso_transform.translation + Vec3::new(0., 0., -0.4);
+    let shoulder_translation =
+        torso_transform.translation + Vec3::new(0., 0., -DISTANCE_CHEST_SHOULDER);
     // the following two need to an input
     let elbow_translation = shoulder_translation + Vec3::new(0., 0., -params.upper_arm_length);
     let wrist_translation = elbow_translation + Vec3::new(0., 0., -params.forearm_length);

@@ -1,11 +1,11 @@
-use crate::{pitcher, prelude::*};
+use crate::prelude::*;
 
 #[derive(Debug, Event)]
 pub(crate) enum PitchStageTransitionEvents {
     KneeUp(Entity),
     FootContact(Entity),
     MaxER(Entity),
-    Release(Entity),
+    // Release(Entity),
     MaxIR(Entity),
 }
 
@@ -25,15 +25,30 @@ pub(crate) fn emit_knee_up(
 
 pub(crate) fn emit_foot_contact(
     mut ev_pitch_stage_transition_event: EventWriter<PitchStageTransitionEvents>,
-    mut query_pitcher: Query<(Entity, &mut PitchStage), With<PitcherParams>>, // there must only one pitcher at a time?
+    query_global_transform: Query<&Transform, With<BodyPartMarker>>,
+    mut query_pitcher: Query<(Entity, &PitcherParams, &mut PitchStage)>, // there must only one pitcher at a time?
 ) {
-    for (entity, mut pitch_stage) in query_pitcher.iter_mut() {
+    for (entity, pitcher_params, mut pitch_stage) in query_pitcher.iter_mut() {
         if *pitch_stage != PitchStage::Stride {
             return;
         }
-        ev_pitch_stage_transition_event.send(PitchStageTransitionEvents::FootContact(entity));
-        *pitch_stage = PitchStage::ArmCocking;
-        info!("transitioning to arm cocking");
+        if let Some(core_entity) = pitcher_params.body_parts.get(&BodyPartMarker::Core) {
+            if let Ok(transform) = query_global_transform.get(*core_entity) {
+                // let transform = global_transform.compute_transform();
+                info!(
+                    "{} v {:?}",
+                    (pitcher_params.leg_length - pitcher_params.torso_drop),
+                    transform.translation.y
+                );
+                if transform.translation.y < (pitcher_params.leg_length - pitcher_params.torso_drop)
+                {
+                    ev_pitch_stage_transition_event
+                        .send(PitchStageTransitionEvents::FootContact(entity));
+                    *pitch_stage = PitchStage::ArmCocking;
+                    info!("transitioning to arm cocking");
+                }
+            }
+        }
     }
 }
 
@@ -100,6 +115,15 @@ pub(crate) fn on_pitch_stage_transition_event(
                                 *body_part_entity,
                                 &mut impulse_joint,
                             );
+                            if let Some(balance_weight) = pitcher.balance_weight {
+                                commands
+                                    .entity(balance_weight)
+                                    .insert(ExternalForce::at_point(
+                                        10000. * Vec3::Z,
+                                        Vec3::new(0., pitcher.leg_length, 0.),
+                                        Vec3::new(0., pitcher.leg_length, 0.),
+                                    ));
+                            }
                         }
                     }
                 }
@@ -116,6 +140,12 @@ pub(crate) fn on_pitch_stage_transition_event(
                                 *body_part_entity,
                                 &mut impulse_joint,
                             );
+                            if let Some(balance_weight) = pitcher.balance_weight {
+                                commands
+                                    .entity(balance_weight)
+                                    .remove::<RigidBody>()
+                                    .insert(RigidBody::Fixed);
+                            }
                         }
                     }
                 }
@@ -136,9 +166,6 @@ pub(crate) fn on_pitch_stage_transition_event(
                         }
                     }
                 }
-            }
-            PitchStageTransitionEvents::Release(_) => {
-                // commands.schedule_on_update(release_system);
             }
             PitchStageTransitionEvents::MaxIR(pitcher_entity) => {
                 if let Ok(pitcher) = query_pitcher.get_mut(*pitcher_entity) {
