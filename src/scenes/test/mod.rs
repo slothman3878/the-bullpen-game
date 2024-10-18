@@ -38,7 +38,7 @@ impl GameScene for TestScene {
 
     fn register_type(&self, app: &mut App) {
         app.register_type::<GameSceneMarker<Self>>()
-            .register_type::<BodyPartMarker>();
+            .register_type::<PitcherBodyPartMarker>();
     }
 }
 
@@ -55,7 +55,7 @@ impl Plugin for TestScene {
                 spawn_camera,
                 setup_sun,
                 spawn_floor,
-                spawn_arms,
+                spawn_pitcher_mechanics,
                 // spawn_camera.after(setup_scene),
             )
                 .chain()

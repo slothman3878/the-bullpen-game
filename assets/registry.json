@@ -15207,10 +15207,10 @@
       "type": "object",
       "typeInfo": "Struct"
     },
-    "the_bullpen_game::scenes::test::components::BodyPartMarker": {
+    "the_bullpen_game::scenes::test::components::PitcherBodyPartMarker": {
       "isComponent": true,
       "isResource": false,
-      "long_name": "the_bullpen_game::scenes::test::components::BodyPartMarker",
+      "long_name": "the_bullpen_game::scenes::test::components::PitcherBodyPartMarker",
       "oneOf": [
         "BackFoot",
         "BackHip",
@@ -15221,7 +15221,7 @@
         "Elbow",
         "Wrist"
       ],
-      "short_name": "BodyPartMarker",
+      "short_name": "PitcherBodyPartMarker",
       "type": "string",
       "typeInfo": "Enum"
     },

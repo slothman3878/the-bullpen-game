@@ -25,14 +25,14 @@ pub(crate) fn emit_knee_up(
 
 pub(crate) fn emit_foot_contact(
     mut ev_pitch_stage_transition_event: EventWriter<PitchStageTransitionEvents>,
-    query_global_transform: Query<&Transform, With<BodyPartMarker>>,
+    query_global_transform: Query<&Transform, With<PitcherBodyPartMarker>>,
     mut query_pitcher: Query<(Entity, &PitcherParams, &mut PitchStage)>, // there must only one pitcher at a time?
 ) {
     for (entity, pitcher_params, mut pitch_stage) in query_pitcher.iter_mut() {
         if *pitch_stage != PitchStage::Stride {
             return;
         }
-        if let Some(core_entity) = pitcher_params.body_parts.get(&BodyPartMarker::Core) {
+        if let Some(core_entity) = pitcher_params.body_parts.get(&PitcherBodyPartMarker::Core) {
             if let Ok(transform) = query_global_transform.get(*core_entity) {
                 // let transform = global_transform.compute_transform();
                 info!(
@@ -62,7 +62,9 @@ pub(crate) fn pelvic_rotation_tracker(
             return;
         }
         if let (Some(pelvis), Some(pelvic_break_sensor)) = (
-            pitcher_params.body_parts.get(&BodyPartMarker::Pelvis),
+            pitcher_params
+                .body_parts
+                .get(&PitcherBodyPartMarker::Pelvis),
             pitcher_params.pelvic_break,
         ) {
             if Some(true) == rapier_context.intersection_pair(*pelvis, pelvic_break_sensor) {
@@ -76,14 +78,14 @@ pub(crate) fn pelvic_rotation_tracker(
 
 pub(crate) fn wrist_z_pos_tracker(
     mut ev_pitch_stage_transition_event: EventWriter<PitchStageTransitionEvents>,
-    query_transform: Query<&Transform, With<BodyPartMarker>>,
+    query_transform: Query<&Transform, With<PitcherBodyPartMarker>>,
     mut query_pitcher: Query<(Entity, &PitcherParams, &mut PitchStage)>,
 ) {
     for (entity, pitcher_params, mut pitch_stage) in query_pitcher.iter_mut() {
         if *pitch_stage != PitchStage::ArmAcceleration {
             return;
         }
-        if let Some(wrist) = pitcher_params.body_parts.get(&BodyPartMarker::Wrist) {
+        if let Some(wrist) = pitcher_params.body_parts.get(&PitcherBodyPartMarker::Wrist) {
             if let Ok(transform) = query_transform.get(*wrist) {
                 if transform.translation.z > 0. {
                     ev_pitch_stage_transition_event.send(PitchStageTransitionEvents::MaxIR(entity));
@@ -99,7 +101,8 @@ pub(crate) fn on_pitch_stage_transition_event(
     mut ev_pitch_stage_transition_event: EventReader<PitchStageTransitionEvents>,
     mut commands: Commands,
     mut query_pitcher: Query<&PitcherParams>,
-    mut query_body_part: Query<(&mut ImpulseJoint, &Transform), With<BodyPartMarker>>,
+    mut query_body_part: Query<(&mut ImpulseJoint, &Transform), With<PitcherBodyPartMarker>>,
+    mut ev_activate_aerodynamics: EventWriter<ActivateAerodynamicsEvent>,
 ) {
     for ev in ev_pitch_stage_transition_event.read() {
         match ev {
@@ -181,12 +184,23 @@ pub(crate) fn on_pitch_stage_transition_event(
                             );
                         }
                         if let Some(ball) = pitcher.ball {
-                            commands.entity(ball).remove::<ImpulseJoint>().insert(
-                                ExternalImpulse {
-                                    impulse: 4. * (Vec3::new(0., 0., 1.)).normalize(), // 4. ~ 5.
+                            commands
+                                .entity(ball)
+                                .remove::<ImpulseJoint>()
+                                .insert(ExternalImpulse {
+                                    impulse: 4. * (Vec3::new(0., 0.5, 1.)).normalize(), // 4. ~ 5.
                                     ..default()
-                                },
-                            );
+                                })
+                                .insert((Restitution {
+                                    coefficient: 0.546,
+                                    combine_rule: CoefficientCombineRule::Min,
+                                },));
+                            //
+                            ev_activate_aerodynamics.send(ActivateAerodynamicsEvent {
+                                entity: ball,
+                                seam_y_angle: 0.,
+                                seam_z_angle: std::f32::consts::PI / 2.,
+                            });
                         }
                     }
                 }
