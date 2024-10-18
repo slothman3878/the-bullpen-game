@@ -19,6 +19,7 @@ pub(crate) use blenvy::*;
 pub(crate) use bevy_flycam::{FlyCam, NoCameraPlayerPlugin};
 
 pub(crate) use crate::pitcher::prelude::*;
+pub(crate) use crate::pitcher_mechanics::prelude::*;
 pub(crate) use crate::scenes::prelude::*;
 
 pub(crate) const PI: f32 = std::f32::consts::PI;
