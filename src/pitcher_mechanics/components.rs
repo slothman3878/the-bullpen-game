@@ -38,8 +38,8 @@ pub(crate) enum PitchingArm {
 impl PitchingArm {
     pub(crate) fn sign(&self) -> f32 {
         match self {
-            PitchingArm::Left => -1.,
-            PitchingArm::Right => 1.,
+            PitchingArm::Left => 1.,
+            PitchingArm::Right => -1.,
         }
     }
 }
