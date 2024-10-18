@@ -188,7 +188,7 @@ pub(crate) fn on_pitch_stage_transition_event(
                                 .entity(ball)
                                 .remove::<ImpulseJoint>()
                                 .insert(ExternalImpulse {
-                                    impulse: 4. * (Vec3::new(0., 0.5, 1.)).normalize(), // 4. ~ 5.
+                                    impulse: 4. * (pitcher.direction).normalize(), // 4. ~ 5.
                                     ..default()
                                 })
                                 .insert((Restitution {

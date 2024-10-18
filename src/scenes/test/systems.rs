@@ -27,7 +27,6 @@ pub(crate) fn spawn_pitcher_mechanics(
     let mut params = PitcherParams {
         pitching_arm: PitchingArm::Right,
         lateral_trunk_tilt: 45. * PI / 180.,
-        rotation: Quat::from_rotation_y(0.),
         ..default()
     };
     let distance_from_ground: f32 = DISTANCE_CORE_HIP - 0.1;
