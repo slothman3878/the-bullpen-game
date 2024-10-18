@@ -11,29 +11,35 @@ pub(crate) fn spawn_pitcher_mechanics(
             PitchStage::default(),
         ))
         .id();
+    // let direction = Vec3::Z;
+    let rotation: f32 = PI;
 
     let mut params = PitcherParams {
         pitching_arm: PitchingArm::Right,
         lateral_trunk_tilt: 45. * PI / 180.,
+        direction: Quat::from_rotation_y(rotation).mul_vec3(Vec3::Z),
         ..default()
     };
     let distance_from_ground: f32 = DISTANCE_CORE_HIP - 0.1;
 
     let balance_weight_transform =
-        Transform::from_translation(Vec3::new(0., params.leg_length - params.torso_drop, 0.));
+        Transform::from_translation(Vec3::new(0., params.leg_length - params.torso_drop, 0.))
+            .with_rotation(Quat::from_rotation_y(rotation));
     let balance_weight = params.build_balance_weight(&mut commands, balance_weight_transform);
     params.balance_weight = Some(balance_weight);
 
     // should not make this children
     let core_transform = Transform::from_translation(
         Vec3::new(0., params.leg_length, 0.) + Vec3::new(0., distance_from_ground, 0.),
-    );
+    )
+    .with_rotation(Quat::from_rotation_y(rotation));
     let core = params.build_core(balance_weight, &mut commands, core_transform);
     params.body_parts.insert(PitcherBodyPartMarker::Core, core);
 
     let back_hip_transform = Transform::from_translation(
         core_transform.translation - Vec3::new(0., DISTANCE_CORE_HIP, 0.),
-    );
+    )
+    .with_rotation(Quat::from_rotation_y(rotation));
     let back_hip = params.build_back_hip(core, &mut commands, back_hip_transform);
     params
         .body_parts
@@ -41,7 +47,8 @@ pub(crate) fn spawn_pitcher_mechanics(
 
     let back_ankle_transform = Transform::from_translation(
         back_hip_transform.translation - Vec3::new(0., params.leg_length, 0.),
-    );
+    )
+    .with_rotation(Quat::from_rotation_y(rotation));
     let back_ankle = params.build_back_ankle(back_hip, &mut commands, back_ankle_transform);
     params
         .body_parts

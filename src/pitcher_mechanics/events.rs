@@ -87,7 +87,13 @@ pub(crate) fn wrist_z_pos_tracker(
         }
         if let Some(wrist) = pitcher_params.body_parts.get(&PitcherBodyPartMarker::Wrist) {
             if let Ok(transform) = query_transform.get(*wrist) {
-                if transform.translation.z > 0. {
+                let rotation = pitcher_params.direction.angle_between(Vec3::Z);
+                info!("rotation: {:?}", rotation);
+                if Quat::from_rotation_y(-rotation)
+                    .mul_vec3(transform.translation)
+                    .z
+                    > 0.
+                {
                     ev_pitch_stage_transition_event.send(PitchStageTransitionEvents::MaxIR(entity));
                     *pitch_stage = PitchStage::ArmDeceleration;
                     info!("transitioning to arm deceleration");
@@ -122,7 +128,7 @@ pub(crate) fn on_pitch_stage_transition_event(
                                 commands
                                     .entity(balance_weight)
                                     .insert(ExternalForce::at_point(
-                                        10000. * Vec3::Z,
+                                        10000. * pitcher.direction, // Vec3::Z,
                                         Vec3::new(0., pitcher.leg_length, 0.),
                                         Vec3::new(0., pitcher.leg_length, 0.),
                                     ));
