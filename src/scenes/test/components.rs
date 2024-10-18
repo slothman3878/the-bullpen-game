@@ -107,23 +107,24 @@ impl PitcherParams {
     ) -> Entity {
         commands
             .spawn((
-                RigidBody::KinematicVelocityBased,
+                RigidBody::Dynamic,
                 GravityScale(1.),
-                ColliderMassProperties::Density(f32::INFINITY),
-                Collider::ball(0.1),
+                // Friction::coefficient(0.),
+                ColliderMassProperties::Density(100000.),
+                Collider::cuboid(0.1, 0.1, 0.1),
                 TransformBundle::from_transform(transform),
             ))
             .id()
     }
 
-    pub(crate) fn build_core(
+    pub(crate) fn build_back_hip(
         &self,
-        balance_weight: Entity,
+        core: Entity,
         commands: &mut Commands,
         transform: Transform,
     ) -> Entity {
-        let balance_weight_joint = GenericJointBuilder::new(JointAxesMask::LIN_AXES)
-            .local_anchor1(Vec3::new(0., self.torso_drop, 0.0))
+        let back_hip_joint = GenericJointBuilder::new(JointAxesMask::LIN_AXES)
+            .local_anchor1(Vec3::new(0., -0.2, 0.0))
             .local_anchor2(Vec3::new(0., 0.0, 0.0))
             .coupled_axes(JointAxesMask::LIN_AXES)
             .limits(JointAxis::AngX, [-0., 0.])
@@ -135,13 +136,71 @@ impl PitcherParams {
             .spawn((
                 RigidBody::Dynamic,
                 GravityScale(0.),
-                ColliderMassProperties::Density(10000.0),
+                ColliderMassProperties::Density(1000.0),
+                Collider::cuboid(0.05, 0.05, 0.05),
+                TransformBundle::from_transform(transform),
+                ImpulseJoint::new(core, TypedJoint::GenericJoint(back_hip_joint)),
+                BodyPartMarker::BackHip,
+            ))
+            .id()
+    }
+
+    pub(crate) fn build_back_ankle(
+        &self,
+        back_hip: Entity,
+        commands: &mut Commands,
+        transform: Transform,
+    ) -> Entity {
+        let back_hip_joint = GenericJointBuilder::new(JointAxesMask::LIN_AXES)
+            .local_anchor1(Vec3::new(0., -self.leg_length, 0.0))
+            .local_anchor2(Vec3::new(0., 0.0, 0.0))
+            .coupled_axes(JointAxesMask::LIN_AXES)
+            .limits(JointAxis::AngX, [-0., 0.])
+            .limits(JointAxis::AngY, [-0., 0.])
+            .limits(JointAxis::AngZ, [-0., 0.])
+            .build();
+
+        commands
+            .spawn((
+                RigidBody::KinematicVelocityBased,
+                GravityScale(1.),
+                ColliderMassProperties::Density(100000.0),
+                Collider::cuboid(0.05, 0.05, 0.05),
+                TransformBundle::from_transform(transform),
+                ImpulseJoint::new(back_hip, TypedJoint::GenericJoint(back_hip_joint)),
+                BodyPartMarker::BackFoot,
+            ))
+            .id()
+    }
+
+    pub(crate) fn build_core(
+        &self,
+        balance_weight: Entity,
+        commands: &mut Commands,
+        transform: Transform,
+    ) -> Entity {
+        // let balance_weight_joint = GenericJointBuilder::new(JointAxesMask::LIN_AXES)
+        //     .local_anchor1(Vec3::new(0., self.torso_drop, 0.0))
+        //     .local_anchor2(Vec3::new(0., 0.0, 0.0))
+        //     .coupled_axes(JointAxesMask::LIN_AXES)
+        //     .limits(JointAxis::AngX, [-0., 0.])
+        //     .limits(JointAxis::AngY, [-0., 0.])
+        //     .limits(JointAxis::AngZ, [-0., 0.])
+        //     .build();
+        let balance_weight_joint = PrismaticJointBuilder::new(-Vec3::Y).build();
+
+        commands
+            .spawn((
+                RigidBody::Dynamic,
+                GravityScale(0.),
+                ColliderMassProperties::Density(100000.0),
                 Collider::cuboid(0.05, 0.05, 0.05),
                 TransformBundle::from_transform(transform),
                 ImpulseJoint::new(
                     balance_weight,
-                    TypedJoint::GenericJoint(balance_weight_joint),
+                    TypedJoint::PrismaticJoint(balance_weight_joint),
                 ),
+                BodyPartMarker::Core,
             ))
             .id()
     }
@@ -346,10 +405,36 @@ impl PitcherParams {
     ) {
         match body_part {
             BodyPartMarker::Core => {
-                // commands.entity(entity).insert(Velocity {
-                //     linvel: Vec3::new(0., -1., 10.),
-                //     ..default()
-                // });
+                // mostly to kickstart the motor
+                commands.entity(entity).insert(ExternalImpulse::at_point(
+                    100. * Vec3::Z,
+                    Vec3::new(0., self.leg_length, 0.),
+                    Vec3::new(0., self.leg_length, 0.),
+                ));
+            }
+            BodyPartMarker::BackFoot => {
+                let new_joint = GenericJointBuilder::new(JointAxesMask::LIN_AXES)
+                    .local_anchor1(Vec3::new(0., -self.leg_length, 0.0))
+                    .local_anchor2(Vec3::new(0., 0.0, 0.0))
+                    .coupled_axes(JointAxesMask::LIN_AXES)
+                    // .limits(JointAxis::AngX, [-0., 0.])
+                    .limits(JointAxis::AngY, [-0., 0.])
+                    .limits(JointAxis::AngZ, [-0., 0.])
+                    .build();
+
+                impulse_joint.data = TypedJoint::GenericJoint(new_joint);
+            }
+            BodyPartMarker::BackHip => {
+                let new_joint = GenericJointBuilder::new(JointAxesMask::LIN_AXES)
+                    .local_anchor1(Vec3::new(0., -0.2, 0.0))
+                    .local_anchor2(Vec3::new(0., 0.0, 0.0))
+                    .coupled_axes(JointAxesMask::LIN_AXES)
+                    // .limits(JointAxis::AngX, [-0., 0.])
+                    .limits(JointAxis::AngY, [-0., 0.])
+                    .limits(JointAxis::AngZ, [-0., 0.])
+                    .build();
+
+                impulse_joint.data = TypedJoint::GenericJoint(new_joint);
             }
             _ => {}
         }

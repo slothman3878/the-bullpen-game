@@ -54,6 +54,7 @@ impl Plugin for TestScene {
             (
                 spawn_camera,
                 setup_sun,
+                spawn_floor,
                 spawn_arms,
                 // spawn_camera.after(setup_scene),
             )
@@ -103,6 +104,27 @@ fn spawn_camera(mut commands: Commands) {
             ..default()
         },
     ));
+}
+
+pub(crate) fn spawn_floor(
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+) {
+    commands
+        .spawn((
+            RigidBody::Fixed,
+            Collider::cuboid(100., 0.01, 100.),
+            TransformBundle::from_transform(Transform::from_translation(Vec3::ZERO)),
+            InheritedVisibility::VISIBLE,
+        ))
+        .with_children(|children| {
+            children.spawn((PbrBundle {
+                mesh: meshes.add(Cuboid::new(100., 0.01, 100.)).into(), // d
+                material: materials.add(Color::WHITE),
+                ..default()
+            },));
+        });
 }
 
 pub(crate) fn setup_sun(mut commands: Commands) {

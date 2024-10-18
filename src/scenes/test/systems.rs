@@ -49,6 +49,19 @@ pub(crate) fn spawn_arms(
     let core = params.build_core(balance_weight, &mut commands, core_transform);
     params.body_parts.insert(BodyPartMarker::Core, core);
 
+    let back_hip_transform =
+        Transform::from_translation(core_transform.translation - Vec3::new(0., 0.2, 0.));
+    let back_hip = params.build_back_hip(core, &mut commands, back_hip_transform);
+    params.body_parts.insert(BodyPartMarker::BackHip, back_hip);
+
+    let back_ankle_transform = Transform::from_translation(
+        back_hip_transform.translation - Vec3::new(0., params.leg_length, 0.),
+    );
+    let back_ankle = params.build_back_ankle(back_hip, &mut commands, back_ankle_transform);
+    params
+        .body_parts
+        .insert(BodyPartMarker::BackFoot, back_ankle);
+
     commands.entity(core).with_children(|children| {
         // pelvic sensor
         let pelvic_break = children
