@@ -10,6 +10,7 @@ use systems::*;
 pub(crate) mod prelude {
     pub(crate) use super::*;
     pub(crate) use components::*;
+    pub(crate) use events::*;
 }
 
 #[derive(Debug)]
@@ -32,8 +33,8 @@ impl<T: GameScene> Plugin for PitcherMechanics<T> {
         .add_systems(
             Update,
             (
-                emit_knee_up.run_if(input_just_released(KeyCode::KeyQ)),
-                emit_foot_contact,
+                emit_knee_up.run_if(input_just_pressed(MouseButton::Left)),
+                // release_ball.run_if(input_just_released(MouseButton::Left)),
             )
                 .chain()
                 .in_set(GameScenesSet::UpdateSet(self.scene.clone())),
@@ -41,6 +42,7 @@ impl<T: GameScene> Plugin for PitcherMechanics<T> {
         .add_systems(
             Update,
             (
+                core_position_tracker,
                 pelvic_rotation_tracker,
                 on_pitch_stage_transition_event,
                 wrist_z_pos_tracker,

@@ -16,8 +16,8 @@ pub(crate) fn spawn_pitcher_mechanics(
     let rotation: f32 = PI;
 
     let mut params = PitcherParams {
-        pitching_arm: PitchingArm::Right,
-        lateral_trunk_tilt: 45. * PI / 180.,
+        pitching_arm: PitchingArm::Left,
+        lateral_trunk_tilt: 30. * PI / 180.,
         direction: Quat::from_rotation_y(rotation).mul_vec3(Vec3::Z),
         starting_pos,
         ..default()
@@ -133,4 +133,77 @@ pub(crate) fn spawn_pitcher_mechanics(
     params.ball = Some(ball);
 
     commands.entity(pitcher).insert(params);
+}
+
+pub(crate) fn core_position_tracker(
+    mut ev_pitch_stage_transition_event: EventWriter<PitchStageTransitionEvents>,
+    query_global_transform: Query<&Transform, With<PitcherBodyPartMarker>>,
+    mut query_pitcher: Query<(Entity, &PitcherParams, &mut PitchStage)>, // there must only one pitcher at a time?
+) {
+    for (entity, pitcher_params, mut pitch_stage) in query_pitcher.iter_mut() {
+        if *pitch_stage != PitchStage::Stride {
+            return;
+        }
+        if let Some(core_entity) = pitcher_params.body_parts.get(&PitcherBodyPartMarker::Core) {
+            if let Ok(transform) = query_global_transform.get(*core_entity) {
+                if transform.translation.y < (pitcher_params.leg_length - pitcher_params.torso_drop)
+                {
+                    ev_pitch_stage_transition_event
+                        .send(PitchStageTransitionEvents::FootContact(entity));
+                    *pitch_stage = PitchStage::ArmCocking;
+                    info!("pitcher event: transitioning to arm cocking");
+                }
+            }
+        }
+    }
+}
+
+pub(crate) fn pelvic_rotation_tracker(
+    mut ev_pitch_stage_transition_event: EventWriter<PitchStageTransitionEvents>,
+    rapier_context: Res<RapierContext>,
+    mut query_pitcher: Query<(Entity, &PitcherParams, &mut PitchStage)>,
+) {
+    for (entity, pitcher_params, mut pitch_stage) in query_pitcher.iter_mut() {
+        if *pitch_stage != PitchStage::ArmCocking {
+            return;
+        }
+        if let (Some(pelvis), Some(pelvic_break_sensor)) = (
+            pitcher_params
+                .body_parts
+                .get(&PitcherBodyPartMarker::Pelvis),
+            pitcher_params.pelvic_break,
+        ) {
+            if Some(true) == rapier_context.intersection_pair(*pelvis, pelvic_break_sensor) {
+                ev_pitch_stage_transition_event.send(PitchStageTransitionEvents::MaxER(entity));
+                *pitch_stage = PitchStage::ArmAcceleration;
+                info!("pitcher event: transitioning to arm acceleration");
+            }
+        }
+    }
+}
+
+pub(crate) fn wrist_z_pos_tracker(
+    mut ev_pitch_stage_transition_event: EventWriter<PitchStageTransitionEvents>,
+    query_transform: Query<&Transform, With<PitcherBodyPartMarker>>,
+    mut query_pitcher: Query<(Entity, &PitcherParams, &mut PitchStage)>,
+) {
+    for (entity, pitcher_params, mut pitch_stage) in query_pitcher.iter_mut() {
+        if *pitch_stage != PitchStage::ArmAcceleration {
+            return;
+        }
+        if let Some(wrist) = pitcher_params.body_parts.get(&PitcherBodyPartMarker::Wrist) {
+            if let Ok(transform) = query_transform.get(*wrist) {
+                let rotation = pitcher_params.direction.angle_between(Vec3::Z);
+                if Quat::from_rotation_y(-rotation)
+                    .mul_vec3(transform.translation - pitcher_params.starting_pos)
+                    .z
+                    > 0.
+                {
+                    ev_pitch_stage_transition_event.send(PitchStageTransitionEvents::MaxIR(entity));
+                    *pitch_stage = PitchStage::ArmDeceleration;
+                    info!("pitcher event: transitioning to arm deceleration");
+                }
+            }
+        }
+    }
 }
