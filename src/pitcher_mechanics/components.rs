@@ -61,6 +61,7 @@ pub(crate) struct PitcherParams {
     pub pitching_arm: PitchingArm,
     pub lateral_trunk_tilt: f32, // PI / 2. - lateral_trunk_tilt
     pub direction: Vec3,
+    pub starting_pos: Vec3,
     //
     pub leg_length: f32,
     pub chest_length: f32,
@@ -84,6 +85,7 @@ impl Default for PitcherParams {
             pitching_arm: PitchingArm::default(),
             lateral_trunk_tilt: PI / 2.,
             direction: Vec3::Z,
+            starting_pos: Vec3::ZERO,
             //
             leg_length: 1.0,
             chest_length: 0.375,

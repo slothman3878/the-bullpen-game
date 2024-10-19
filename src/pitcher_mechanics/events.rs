@@ -88,9 +88,9 @@ pub(crate) fn wrist_z_pos_tracker(
         if let Some(wrist) = pitcher_params.body_parts.get(&PitcherBodyPartMarker::Wrist) {
             if let Ok(transform) = query_transform.get(*wrist) {
                 let rotation = pitcher_params.direction.angle_between(Vec3::Z);
-                info!("rotation: {:?}", rotation);
+                // info!("rotation: {:?}", rotation);
                 if Quat::from_rotation_y(-rotation)
-                    .mul_vec3(transform.translation)
+                    .mul_vec3(transform.translation - pitcher_params.starting_pos)
                     .z
                     > 0.
                 {
