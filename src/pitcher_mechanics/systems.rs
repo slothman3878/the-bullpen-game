@@ -5,7 +5,7 @@ pub(crate) fn spawn_pitcher_mechanics(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    let starting_pos = Vec3::new(0., 0., 18.7); // Vec3::ZERO;
+    let starting_pos = Vec3::new(0., 0., 18.44); // Vec3::ZERO;
     let pitcher = commands
         .spawn((
             TransformBundle::from_transform(Transform::from_translation(starting_pos)),

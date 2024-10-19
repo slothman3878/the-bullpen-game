@@ -38,12 +38,15 @@ impl Plugin for BullpenScene {
         self.register_type(app);
         self.configure_set(app);
 
-        // app.add_plugins(PitcherPlugin::<BullpenScene> { scene: *self });
-        app.add_plugins(PitcherMechanics::<BullpenScene> { scene: *self });
+        app.add_plugins(PitcherPlugin::<BullpenScene> { scene: *self });
+        // app.add_plugins(PitcherMechanics::<BullpenScene> { scene: *self });
 
         app.add_systems(
             OnEnter(Self),
-            (setup_scene, spawn_camera)
+            (
+                setup_scene,
+                // spawn_camera, //
+            )
                 .chain()
                 .in_set(GameScenesSet::OnEnterSet(*self)),
         )

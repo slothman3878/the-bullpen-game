@@ -15120,23 +15120,38 @@
       "type": "object",
       "typeInfo": "Value"
     },
-    "the_bullpen_game::pitcher_mechanics::components::PitcherBodyPartMarker": {
+    "the_bullpen_game::pitcher::components::PitcherCameraMarker": {
+      "additionalProperties": false,
       "isComponent": true,
       "isResource": false,
-      "long_name": "the_bullpen_game::pitcher_mechanics::components::PitcherBodyPartMarker",
-      "oneOf": [
-        "BackFoot",
-        "BackHip",
-        "Core",
-        "Pelvis",
-        "Torso",
-        "Shoulder",
-        "Elbow",
-        "Wrist"
-      ],
-      "short_name": "PitcherBodyPartMarker",
-      "type": "string",
-      "typeInfo": "Enum"
+      "long_name": "the_bullpen_game::pitcher::components::PitcherCameraMarker",
+      "properties": {},
+      "required": [],
+      "short_name": "PitcherCameraMarker",
+      "type": "object",
+      "typeInfo": "Struct"
+    },
+    "the_bullpen_game::pitcher::components::PitcherCameraTargetMarker": {
+      "additionalProperties": false,
+      "isComponent": true,
+      "isResource": false,
+      "long_name": "the_bullpen_game::pitcher::components::PitcherCameraTargetMarker",
+      "properties": {},
+      "required": [],
+      "short_name": "PitcherCameraTargetMarker",
+      "type": "object",
+      "typeInfo": "Struct"
+    },
+    "the_bullpen_game::pitcher::components::PitcherMarker": {
+      "additionalProperties": false,
+      "isComponent": true,
+      "isResource": false,
+      "long_name": "the_bullpen_game::pitcher::components::PitcherMarker",
+      "properties": {},
+      "required": [],
+      "short_name": "PitcherMarker",
+      "type": "object",
+      "typeInfo": "Struct"
     },
     "the_bullpen_game::scenes::GameSceneMarker<the_bullpen_game::scenes::bullpen::BullpenScene>": {
       "isComponent": true,
