@@ -33,7 +33,7 @@ impl<T: GameScene> Plugin for PitcherMechanics<T> {
         .add_systems(
             Update,
             (
-                emit_knee_up.run_if(input_just_pressed(MouseButton::Left)),
+                emit_knee_up.run_if(input_just_released(MouseButton::Left)),
                 // release_ball.run_if(input_just_released(MouseButton::Left)),
             )
                 .chain()

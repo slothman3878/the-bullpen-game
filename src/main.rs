@@ -1,5 +1,4 @@
 mod components;
-mod pitcher;
 mod pitcher_mechanics;
 mod prelude;
 mod scenes;
