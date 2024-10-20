@@ -16,6 +16,24 @@ pub(crate) fn spawn_camera(mut commands: Commands) {
     ));
 }
 
+pub(crate) fn mark_velo(
+    query_pitch_stage: Query<(&PitcherParams, &PitchStage)>,
+    query_ball: Query<&Velocity, With<BaseballMarker>>,
+) {
+    for (_pitcher_params, pitch_stage) in query_pitch_stage.iter() {
+        if *pitch_stage < PitchStage::ArmAcceleration {
+            return;
+        }
+        for velo in query_ball.iter() {
+            info!(
+                "velo: {:?}, direction: {:?}",
+                velo.linvel.length(),
+                velo.linvel.normalize()
+            );
+        }
+    }
+}
+
 pub(crate) fn setup_scene(mut commands: Commands) {
     commands.spawn((
         BlueprintInfo::from_path("levels/TheBullpen.glb"),
@@ -24,9 +42,6 @@ pub(crate) fn setup_scene(mut commands: Commands) {
         GameWorldTag,
     ));
 }
-
-#[derive(Debug, Component)]
-pub(crate) struct BaseballMarker;
 
 pub(crate) fn despawn_ball(
     mut commands: Commands,

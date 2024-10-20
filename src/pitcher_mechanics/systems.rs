@@ -1,138 +1,195 @@
 use crate::prelude::*;
 
-pub(crate) fn spawn_pitcher_mechanics(
+const STARTING_POSITION: Vec3 = Vec3::new(0., 0., 18.44);
+
+pub(crate) fn spawn_pitcher(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    let starting_pos = Vec3::new(0., 0., 18.44); // Vec3::ZERO;
-    let pitcher = commands
+    commands
         .spawn((
-            TransformBundle::from_transform(Transform::from_translation(starting_pos)),
+            TransformBundle::from_transform(Transform::from_translation(STARTING_POSITION)),
             PitchStage::default(),
+            PitcherMarker,
         ))
-        .id();
-    // let direction = Vec3::Z;
-    let rotation: f32 = PI;
+        .with_children(|children| {
+            children.spawn((
+                ThirdPersonCameraTarget,
+                TransformBundle::from_transform(Transform::from_translation(
+                    STARTING_POSITION + Vec3::new(0., 1.6, 0.),
+                )),
+            ));
+        });
 
-    let mut params = PitcherParams {
-        pitching_arm: PitchingArm::Left,
-        lateral_trunk_tilt: 30. * PI / 180.,
-        direction: Quat::from_rotation_y(rotation).mul_vec3(Vec3::Z),
-        starting_pos,
-        ..default()
-    };
-    let distance_from_ground: f32 = DISTANCE_CORE_HIP - 0.1;
+    commands
+        .spawn((
+            ThirdPersonCamera {
+                aim_speed: 5.0,
+                cursor_lock_toggle_enabled: true,
+                offset_enabled: true,
+                offset: Offset::new(0.5, 0.),
+                zoom: Zoom::new(8., 20.),
+                cursor_lock_key: KeyCode::Escape,
+                ..default()
+            },
+            Camera3dBundle {
+                projection: blenvy::Projection::Perspective(PerspectiveProjection {
+                    fov: 10.0_f32.to_radians(),
+                    ..default()
+                }),
+                camera: Camera {
+                    is_active: true,
+                    order: 2,
+                    ..default()
+                },
+                ..default()
+            },
+            PitcherCameraMarker,
+            Name::new("pitcher camera"),
+            InheritedVisibility::VISIBLE,
+        ))
+        .with_children(|parent| {
+            parent.spawn((PbrBundle {
+                mesh: meshes.add(Sphere::new(0.0005)).into(), // default 0.075
+                material: materials.add(Color::srgb(0.1, 0.1, 0.1)),
+                transform: Transform::from_xyz(0., 0., -0.5),
+                ..default()
+            },));
+        });
+}
 
-    let balance_weight_transform = Transform::from_translation(
-        starting_pos + Vec3::new(0., params.leg_length - params.torso_drop, 0.),
-    )
-    .with_rotation(Quat::from_rotation_y(rotation));
-    let balance_weight = params.build_balance_weight(&mut commands, balance_weight_transform);
-    params.balance_weight = Some(balance_weight);
+pub(crate) fn spawn_pitcher_mechanics(
+    query_pitcher: Query<Entity, With<PitcherMarker>>,
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+) {
+    for pitcher in query_pitcher.iter() {
+        let starting_pos = STARTING_POSITION;
+        // let direction = Vec3::Z;
+        let rotation: f32 = PI;
 
-    // should not make this children
-    let core_transform = Transform::from_translation(
-        starting_pos
-            + Vec3::new(0., params.leg_length, 0.)
-            + Vec3::new(0., distance_from_ground, 0.),
-    )
-    .with_rotation(Quat::from_rotation_y(rotation));
-    let core = params.build_core(balance_weight, &mut commands, core_transform);
-    params.body_parts.insert(PitcherBodyPartMarker::Core, core);
+        let mut params = PitcherParams {
+            pitching_arm: PitchingArm::Left,
+            lateral_trunk_tilt: 30. * PI / 180.,
+            direction: Quat::from_rotation_y(rotation).mul_vec3(Vec3::Z),
+            starting_pos,
+            ..default()
+        };
+        let distance_from_ground: f32 = DISTANCE_CORE_HIP - 0.1;
 
-    let back_hip_transform = Transform::from_translation(
-        core_transform.translation - Vec3::new(0., DISTANCE_CORE_HIP, 0.),
-    )
-    .with_rotation(Quat::from_rotation_y(rotation));
-    let back_hip = params.build_back_hip(core, &mut commands, back_hip_transform);
-    params
-        .body_parts
-        .insert(PitcherBodyPartMarker::BackHip, back_hip);
+        let balance_weight_transform = Transform::from_translation(
+            starting_pos + Vec3::new(0., params.leg_length - params.torso_drop, 0.),
+        )
+        .with_rotation(Quat::from_rotation_y(rotation));
+        let balance_weight = params.build_balance_weight(&mut commands, balance_weight_transform);
+        params.balance_weight = Some(balance_weight);
 
-    let back_ankle_transform = Transform::from_translation(
-        back_hip_transform.translation - Vec3::new(0., params.leg_length, 0.),
-    )
-    .with_rotation(Quat::from_rotation_y(rotation));
-    let back_ankle = params.build_back_ankle(back_hip, &mut commands, back_ankle_transform);
-    params
-        .body_parts
-        .insert(PitcherBodyPartMarker::BackFoot, back_ankle);
+        // should not make this children
+        let core_transform = Transform::from_translation(
+            starting_pos
+                + Vec3::new(0., params.leg_length, 0.)
+                + Vec3::new(0., distance_from_ground, 0.),
+        )
+        .with_rotation(Quat::from_rotation_y(rotation));
+        let core = params.build_core(balance_weight, &mut commands, core_transform);
+        params.body_parts.insert(PitcherBodyPartMarker::Core, core);
 
-    commands.entity(core).with_children(|children| {
-        // pelvic sensor
-        let pelvic_break = children
-            .spawn((
-                Sensor,
-                Collider::cuboid(0.001, 0.1, 0.001),
-                TransformBundle::from_transform(Transform::from_translation(Vec3::new(
-                    params.pitching_arm.sign() * 0.15, // apply pitching arm sign
-                    params.waist_length,
-                    0.,
-                ))),
-            ))
-            .id();
-        params.pelvic_break = Some(pelvic_break);
-    });
+        let back_hip_transform = Transform::from_translation(
+            core_transform.translation - Vec3::new(0., DISTANCE_CORE_HIP, 0.),
+        )
+        .with_rotation(Quat::from_rotation_y(rotation));
+        let back_hip = params.build_back_hip(core, &mut commands, back_hip_transform);
+        params
+            .body_parts
+            .insert(PitcherBodyPartMarker::BackHip, back_hip);
 
-    let pelvic_transform = Transform::from_translation(
-        core_transform.translation + Vec3::new(0., params.waist_length, 0.),
-    )
-    .with_rotation(Quat::from_rotation_y(params.pitching_arm.sign() * PI / 2.));
-    let pelvis = params.build_pelvis(core, &mut commands, pelvic_transform);
-    params
-        .body_parts
-        .insert(PitcherBodyPartMarker::Pelvis, pelvis);
+        let back_ankle_transform = Transform::from_translation(
+            back_hip_transform.translation - Vec3::new(0., params.leg_length, 0.),
+        )
+        .with_rotation(Quat::from_rotation_y(rotation));
+        let back_ankle = params.build_back_ankle(back_hip, &mut commands, back_ankle_transform);
+        params
+            .body_parts
+            .insert(PitcherBodyPartMarker::BackFoot, back_ankle);
 
-    let torso_transform = Transform::from_translation(
-        pelvic_transform.translation + Vec3::new(0., params.chest_length, 0.),
-    )
-    .with_rotation(Quat::from_rotation_y(params.pitching_arm.sign() * PI / 2.));
-    let upper_torso = params.build_upper_torso(pelvis, &mut commands, torso_transform);
-    params
-        .body_parts
-        .insert(PitcherBodyPartMarker::Torso, upper_torso);
+        commands.entity(core).with_children(|children| {
+            // pelvic sensor
+            let pelvic_break = children
+                .spawn((
+                    Sensor,
+                    Collider::cuboid(0.001, 0.1, 0.001),
+                    TransformBundle::from_transform(Transform::from_translation(Vec3::new(
+                        params.pitching_arm.sign() * 0.15, // apply pitching arm sign
+                        params.waist_length,
+                        0.,
+                    ))),
+                ))
+                .id();
+            params.pelvic_break = Some(pelvic_break);
+        });
 
-    // need to consider the vector from elbow to torso
-    let shoulder_translation =
-        torso_transform.translation + Vec3::new(0., 0., -DISTANCE_CHEST_SHOULDER);
-    // the following two need to an input
-    let elbow_translation = shoulder_translation + Vec3::new(0., 0., -params.upper_arm_length);
-    let wrist_translation = elbow_translation + Vec3::new(0., 0., -params.forearm_length);
-
-    let shoulder_transform = Transform::from_translation(shoulder_translation)
+        let pelvic_transform = Transform::from_translation(
+            core_transform.translation + Vec3::new(0., params.waist_length, 0.),
+        )
         .with_rotation(Quat::from_rotation_y(params.pitching_arm.sign() * PI / 2.));
-    let shoulder = params.build_shoulder(upper_torso, &mut commands, shoulder_transform);
-    params
-        .body_parts
-        .insert(PitcherBodyPartMarker::Shoulder, shoulder);
+        let pelvis = params.build_pelvis(core, &mut commands, pelvic_transform);
+        params
+            .body_parts
+            .insert(PitcherBodyPartMarker::Pelvis, pelvis);
 
-    let elbow_transform = Transform::from_translation(elbow_translation)
+        let torso_transform = Transform::from_translation(
+            pelvic_transform.translation + Vec3::new(0., params.chest_length, 0.),
+        )
         .with_rotation(Quat::from_rotation_y(params.pitching_arm.sign() * PI / 2.));
-    let elbow = params.build_elbow(shoulder, &mut commands, elbow_transform);
-    params
-        .body_parts
-        .insert(PitcherBodyPartMarker::Elbow, elbow);
+        let upper_torso = params.build_upper_torso(pelvis, &mut commands, torso_transform);
+        params
+            .body_parts
+            .insert(PitcherBodyPartMarker::Torso, upper_torso);
 
-    let wrist_transform = Transform::from_translation(wrist_translation)
-        .with_rotation(Quat::from_rotation_y(params.pitching_arm.sign() * PI / 2.));
-    let wrist = params.build_wrist(elbow, &mut commands, wrist_transform);
-    params
-        .body_parts
-        .insert(PitcherBodyPartMarker::Wrist, wrist);
+        // need to consider the vector from elbow to torso
+        let shoulder_translation =
+            torso_transform.translation + Vec3::new(0., 0., -DISTANCE_CHEST_SHOULDER);
+        // the following two need to an input
+        let elbow_translation = shoulder_translation + Vec3::new(0., 0., -params.upper_arm_length);
+        let wrist_translation = elbow_translation + Vec3::new(0., 0., -params.forearm_length);
 
-    let ball_transfomr = Transform::from_translation(wrist_translation + Vec3::new(0., 0., -0.05))
-        .with_rotation(Quat::from_rotation_y(params.pitching_arm.sign() * PI / 2.));
-    let ball = params.build_ball(
-        wrist,
-        &mut commands,
-        &mut meshes,
-        &mut materials,
-        ball_transfomr,
-    );
-    params.ball = Some(ball);
+        let shoulder_transform = Transform::from_translation(shoulder_translation)
+            .with_rotation(Quat::from_rotation_y(params.pitching_arm.sign() * PI / 2.));
+        let shoulder = params.build_shoulder(upper_torso, &mut commands, shoulder_transform);
+        params
+            .body_parts
+            .insert(PitcherBodyPartMarker::Shoulder, shoulder);
 
-    commands.entity(pitcher).insert(params);
+        let elbow_transform = Transform::from_translation(elbow_translation)
+            .with_rotation(Quat::from_rotation_y(params.pitching_arm.sign() * PI / 2.));
+        let elbow = params.build_elbow(shoulder, &mut commands, elbow_transform);
+        params
+            .body_parts
+            .insert(PitcherBodyPartMarker::Elbow, elbow);
+
+        let wrist_transform = Transform::from_translation(wrist_translation)
+            .with_rotation(Quat::from_rotation_y(params.pitching_arm.sign() * PI / 2.));
+        let wrist = params.build_wrist(elbow, &mut commands, wrist_transform);
+        params
+            .body_parts
+            .insert(PitcherBodyPartMarker::Wrist, wrist);
+
+        let ball_transfomr =
+            Transform::from_translation(wrist_translation + Vec3::new(0., 0., -0.05))
+                .with_rotation(Quat::from_rotation_y(params.pitching_arm.sign() * PI / 2.));
+        let ball = params.build_ball(
+            wrist,
+            &mut commands,
+            &mut meshes,
+            &mut materials,
+            ball_transfomr,
+        );
+        params.ball = Some(ball);
+
+        commands.entity(pitcher).insert(params);
+    }
 }
 
 pub(crate) fn core_position_tracker(

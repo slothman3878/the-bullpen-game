@@ -45,7 +45,7 @@ impl Plugin for BullpenScene {
             OnEnter(Self),
             (
                 setup_scene,
-                spawn_camera, //
+                // spawn_camera, //
             )
                 .chain()
                 .in_set(GameScenesSet::OnEnterSet(*self)),
@@ -70,6 +70,7 @@ impl Plugin for BullpenScene {
                 .run_if(input_just_released(KeyCode::KeyR))
                 .in_set(AeroActivationSet::PostActivation))
             .in_set(GameScenesSet::UpdateSet(*self)),
-        );
+        )
+        .add_systems(Update, (mark_velo).in_set(GameScenesSet::UpdateSet(*self)));
     }
 }

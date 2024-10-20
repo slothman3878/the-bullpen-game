@@ -7,6 +7,18 @@ use crate::prelude::*;
 pub(crate) const DISTANCE_CORE_HIP: f32 = 0.2;
 pub(crate) const DISTANCE_CHEST_SHOULDER: f32 = 0.4;
 
+#[derive(Debug, Component, Reflect, Clone, Copy)]
+#[reflect(Component)]
+pub(crate) struct PitcherMarker;
+
+#[derive(Debug, Component, Reflect, Clone, Copy)]
+#[reflect(Component)]
+pub(crate) struct PitcherCameraMarker;
+
+#[derive(Debug, Component, Reflect, Clone, Copy)]
+#[reflect(Component)]
+pub(crate) struct PitcherCameraTargetMarker;
+
 #[derive(Debug, Reflect, Clone, Component)]
 #[reflect(Component)]
 pub(crate) struct BalanceWeightMarker;
@@ -390,8 +402,8 @@ impl PitcherParams {
                     coefficient: 0.546,
                     combine_rule: CoefficientCombineRule::Min,
                 },
-                PitcherBodyPartMarker::Wrist,
                 BaseballFlightBundle::default(),
+                BaseballMarker,
             ))
             .with_children(|children| {
                 children.spawn((PbrBundle {

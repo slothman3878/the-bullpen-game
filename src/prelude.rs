@@ -18,6 +18,7 @@ pub(crate) use blenvy::*;
 
 pub(crate) use bevy_flycam::{FlyCam, NoCameraPlayerPlugin};
 
+pub(crate) use crate::components::*;
 pub(crate) use crate::pitcher::prelude::*;
 pub(crate) use crate::pitcher_mechanics::prelude::*;
 pub(crate) use crate::scenes::prelude::*;

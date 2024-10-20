@@ -26,7 +26,7 @@ impl<T: GameScene> Plugin for PitcherMechanics<T> {
 
         app.add_systems(
             OnEnter(self.scene.clone()),
-            (spawn_pitcher_mechanics,)
+            (spawn_pitcher, spawn_pitcher_mechanics)
                 .chain()
                 .in_set(GameScenesSet::OnEnterSet(self.scene.clone())),
         )
