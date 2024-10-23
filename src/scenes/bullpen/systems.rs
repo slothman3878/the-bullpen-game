@@ -25,6 +25,58 @@ pub(crate) fn setup_scene(mut commands: Commands) {
     ));
 }
 
+pub(crate) fn params_menu(
+    mut selected_pitch_parameters: ResMut<SelectedPitchParameters>,
+    mut contexts: EguiContexts,
+) {
+    let ctx = contexts.ctx_mut();
+    egui::Window::new("menu").show(ctx, |ui| {
+        egui::Grid::new("parameters").show(ui, |ui| {
+            ui.label("speed (mph)");
+            egui::Slider::new(&mut selected_pitch_parameters.0.speed, 30.0_f32..=110.0_f32).ui(ui);
+            ui.end_row();
+
+            ui.label("spin (rpm)");
+            egui::Slider::new(
+                &mut selected_pitch_parameters.0.spin_rate,
+                500.0_f32..=3000.0_f32,
+            )
+            .ui(ui);
+            ui.end_row();
+
+            ui.label("spin efficiency (%)");
+            egui::Slider::new(
+                &mut selected_pitch_parameters.0.spin_efficiency,
+                0.0_f32..=1.0_f32,
+            )
+            .ui(ui);
+            ui.end_row();
+
+            ui.label("gyro pole");
+            ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
+                ui.selectable_value(
+                    &mut selected_pitch_parameters.0.gyro_pole,
+                    GyroPole::Left,
+                    "Left",
+                );
+                ui.selectable_value(
+                    &mut selected_pitch_parameters.0.gyro_pole,
+                    GyroPole::Right,
+                    "Right",
+                );
+            });
+            ui.end_row();
+
+            let (hr, _) = selected_pitch_parameters.0.tilt.to_hour_minutes();
+            let mut selected_hr = hr;
+            ui.label("tilt");
+            egui::Slider::new(&mut selected_hr, 0..=12).ui(ui);
+            ui.end_row();
+            selected_pitch_parameters.0.tilt = Tilt::from_hour_mintes(selected_hr, 0);
+        });
+    });
+}
+
 #[derive(Debug, Component)]
 pub(crate) struct BaseballMarker;
 
@@ -136,7 +188,8 @@ pub(crate) fn launch_ball(
             spin_z_0 * RPM_TO_RADS,
         );
 
-        velocity.linvel = direction * speed * 0.3048;
+        info!("speed: {:?}", speed);
+        velocity.linvel = direction * speed * 0.44704; // 0.3048;
         velocity.angvel = spin.from_baseball_coord_to_bevy();
 
         ev_activate_aerodynamics.send(ActivateAerodynamicsEvent {

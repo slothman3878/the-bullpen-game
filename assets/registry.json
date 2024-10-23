@@ -3633,6 +3633,11 @@
             "$ref": "#/$defs/core::option::Option<alloc::string::String>"
           }
         },
+        "run_manually": {
+          "type": {
+            "$ref": "#/$defs/bool"
+          }
+        },
         "scale_factor": {
           "type": {
             "$ref": "#/$defs/f32"
@@ -3640,6 +3645,7 @@
         }
       },
       "required": [
+        "run_manually",
         "scale_factor"
       ],
       "short_name": "EguiSettings",

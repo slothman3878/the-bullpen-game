@@ -50,6 +50,10 @@ impl Plugin for BullpenScene {
         )
         .add_systems(
             Update,
+            (params_menu).in_set(GameScenesSet::UpdateSet(*self)),
+        )
+        .add_systems(
+            Update,
             (spawn_ball
                 .run_if(input_just_pressed(MouseButton::Right))
                 .in_set(AeroActivationSet::PreActivation))

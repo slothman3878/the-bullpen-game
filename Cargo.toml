@@ -37,9 +37,10 @@ leafwing-input-manager = "^0.14.0"
 log = "^0.4.22"
 bevy-inspector-egui = "^0.25.1"
 bevy_third_person_camera = "0.1.11"
-bevy-rapier-baseball-flight = "0.0.1-alpha.3"
+bevy-rapier-baseball-flight = { path = "../016-bevy-rapier-baseball-flight/bevy-rapier-baseball-flight" } #"0.0.1-alpha.4"
 bevy_rapier3d = "0.27.0"
 bevy_dolly = { version = "0.0.4" }
+bevy_egui = "0.30"
 
 [dev-dependencies]
 bevy-inspector-egui = "^0.25.1"
