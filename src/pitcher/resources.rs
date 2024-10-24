@@ -1,5 +1,10 @@
 use crate::prelude::*;
 
+#[derive(Debug, Resource)]
+pub(crate) struct PitcherPluginConfig {
+    pub render_layers: Vec<usize>,
+}
+
 #[derive(Debug, Resource, Clone, Copy)]
 pub(crate) struct SelectedPitchParameters(pub PitchParams);
 

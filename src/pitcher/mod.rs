@@ -19,6 +19,7 @@ pub(crate) mod prelude {
 #[derive(Debug)]
 pub(crate) struct PitcherPlugin<T: GameScene> {
     pub scene: T,
+    pub render_layers: Vec<usize>,
 }
 
 impl<T: GameScene> Plugin for PitcherPlugin<T> {
@@ -29,7 +30,10 @@ impl<T: GameScene> Plugin for PitcherPlugin<T> {
 
         app.add_event::<BaseballLaunchEvent>();
 
-        app.insert_resource(SelectedPitchParameters(PitchParams {
+        app.insert_resource(PitcherPluginConfig {
+            render_layers: self.render_layers.clone(),
+        })
+        .insert_resource(SelectedPitchParameters(PitchParams {
             gyro_pole: GyroPole::default(),
             spin_efficiency: 1.,
             speed: 90. * MPH_TO_FTS,
@@ -40,7 +44,6 @@ impl<T: GameScene> Plugin for PitcherPlugin<T> {
             starting_point: Vec3::new(0.48, 1.82, 16.764),
             direction: Vec3::ZERO,
         }));
-
         // app.add_systems(OnEnter(self.scene.clone()), spawn_arms);
 
         app.add_systems(
@@ -56,6 +59,7 @@ pub fn setup_camera(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
+    pitcher_plugin_config: Res<PitcherPluginConfig>,
     query_pitcher: Query<Entity, (With<PitcherCameraTargetMarker>, With<Transform>)>,
 ) {
     match query_pitcher.get_single() {
@@ -88,17 +92,21 @@ pub fn setup_camera(
                         },
                         ..default()
                     },
+                    RenderLayers::from_layers(&pitcher_plugin_config.render_layers),
                     PitcherCameraMarker,
                     Name::new("pitcher camera"),
                     InheritedVisibility::VISIBLE,
                 ))
                 .with_children(|parent| {
-                    parent.spawn((PbrBundle {
-                        mesh: meshes.add(Sphere::new(0.0005)).into(), // default 0.075
-                        material: materials.add(Color::srgb(0.1, 0.1, 0.1)),
-                        transform: Transform::from_xyz(0., 0., -0.5),
-                        ..default()
-                    },));
+                    parent.spawn((
+                        PbrBundle {
+                            mesh: meshes.add(Sphere::new(0.0005)).into(), // default 0.075
+                            material: materials.add(Color::srgb(0.1, 0.1, 0.1)),
+                            transform: Transform::from_xyz(0., 0., -0.5),
+                            ..default()
+                        },
+                        RenderLayers::from_layers(&pitcher_plugin_config.render_layers),
+                    ));
                 });
         }
         Err(_) => {

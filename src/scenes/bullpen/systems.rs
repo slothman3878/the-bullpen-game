@@ -1,6 +1,9 @@
 use crate::prelude::*;
 
-pub(crate) fn spawn_camera(mut commands: Commands) {
+// render layer 0 has the scene
+// render layer 1 has the baseball preview
+
+pub(crate) fn _spawn_camera(mut commands: Commands) {
     commands.spawn((
         Name::new("fly cam"),
         FlyCam,
@@ -17,6 +20,7 @@ pub(crate) fn spawn_camera(mut commands: Commands) {
 }
 
 pub(crate) fn setup_scene(mut commands: Commands) {
+    // TODO: need to add render layers to blenvy
     commands.spawn((
         BlueprintInfo::from_path("levels/TheBullpen.glb"),
         SpawnBlueprint,
@@ -118,17 +122,21 @@ pub(crate) fn spawn_ball(
                 },
                 //
                 InheritedVisibility::VISIBLE,
+                RenderLayers::from_layers(&[0]),
             ))
             .with_children(|child| {
-                child.spawn((PbrBundle {
-                    mesh: meshes.add(Sphere::new(0.03).mesh().uv(32, 18)),
-                    material: materials.add(StandardMaterial {
-                        base_color: Color::WHITE,
-                        perceptual_roughness: 1.0,
+                child.spawn((
+                    PbrBundle {
+                        mesh: meshes.add(Sphere::new(0.03).mesh().uv(32, 18)),
+                        material: materials.add(StandardMaterial {
+                            base_color: Color::WHITE,
+                            perceptual_roughness: 1.0,
+                            ..default()
+                        }),
                         ..default()
-                    }),
-                    ..default()
-                },));
+                    },
+                    RenderLayers::from_layers(&[0]),
+                ));
             });
     }
 }

@@ -38,7 +38,10 @@ impl Plugin for BullpenScene {
         self.register_type(app);
         self.configure_set(app);
 
-        app.add_plugins(PitcherPlugin::<BullpenScene> { scene: *self });
+        app.add_plugins(PitcherPlugin::<BullpenScene> {
+            scene: *self,
+            render_layers: vec![0],
+        });
 
         app.add_systems(
             OnEnter(Self),
