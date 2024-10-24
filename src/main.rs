@@ -1,3 +1,4 @@
+mod materials;
 mod pitcher;
 mod prelude;
 mod scenes;
@@ -25,6 +26,8 @@ fn main() {
         }),
         ..Default::default()
     }));
+
+    app.add_plugins(MaterialPlugin::<LineMaterial>::default());
 
     app.add_plugins(EguiPlugin);
 
