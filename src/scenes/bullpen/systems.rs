@@ -1,5 +1,17 @@
 use crate::prelude::*;
 
+pub(crate) fn spawn_baseball(
+    mut commands: Commands,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+) {
+    commands.spawn((
+        BlueprintInfo::from_path("blueprints/Baseball.glb"),
+        SpawnBlueprint,
+        HideUntilReady,
+        GameWorldTag,
+    ));
+}
+
 // render layer 0 has the scene
 // render layer 1 has the baseball preview
 
