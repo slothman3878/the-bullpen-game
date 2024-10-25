@@ -3,8 +3,8 @@
    [ 
     ("CeilingLights", File ( path: "blueprints/CeilingLights.glb" )),
     ("PitchMound", File ( path: "blueprints/PitchMound.glb" )),
-    ("mound_material", File ( path: "materials/mound_material.glb" )),
     ("mound_rubber_material", File ( path: "materials/mound_rubber_material.glb" )),
+    ("mound_material", File ( path: "materials/mound_material.glb" )),
     ("Room", File ( path: "blueprints/Room.glb" )),
     ("ceiling.material", File ( path: "materials/ceiling.material.glb" )),
     ("floor.material", File ( path: "materials/floor.material.glb" )),
@@ -15,5 +15,8 @@
     ("mound_rubber_material", File ( path: "materials/mound_rubber_material.glb" )),
     ("Pitcher", File ( path: "blueprints/Pitcher.glb" )),
     ("humanoid.material", File ( path: "materials/humanoid.material.glb" )),
+    ("Baseball", File ( path: "blueprints/Baseball.glb" )),
+    ("baseball.material", File ( path: "materials/baseball.material.glb" )),
+    ("seam.material", File ( path: "materials/seam.material.glb" )),
    ]
 )

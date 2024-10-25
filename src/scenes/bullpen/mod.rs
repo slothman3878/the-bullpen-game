@@ -47,7 +47,6 @@ impl Plugin for BullpenScene {
             OnEnter(Self),
             (
                 setup_scene,
-                spawn_baseball,
                 // spawn_camera.after(setup_scene),
             )
                 .in_set(GameScenesSet::OnEnterSet(*self)),

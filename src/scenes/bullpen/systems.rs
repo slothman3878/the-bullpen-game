@@ -1,19 +1,9 @@
 use crate::prelude::*;
 
-pub(crate) fn spawn_baseball(
-    mut commands: Commands,
-    mut materials: ResMut<Assets<StandardMaterial>>,
-) {
-    commands.spawn((
-        BlueprintInfo::from_path("blueprints/Baseball.glb"),
-        SpawnBlueprint,
-        HideUntilReady,
-        GameWorldTag,
-    ));
-}
-
 // render layer 0 has the scene
 // render layer 1 has the baseball preview
+
+const PI: f32 = std::f32::consts::PI;
 
 pub(crate) fn _spawn_camera(mut commands: Commands) {
     commands.spawn((
@@ -89,6 +79,21 @@ pub(crate) fn params_menu(
             egui::Slider::new(&mut selected_hr, 0..=12).ui(ui);
             ui.end_row();
             selected_pitch_parameters.0.tilt = Tilt::from_hour_mintes(selected_hr, 0);
+
+            ui.label("seam orientation");
+            egui::Grid::new("seam orientation").show(ui, |ui| {
+                ui.label("y angle (°)");
+                let mut seam_y_angle_deg = selected_pitch_parameters.0.seam_y_angle.to_degrees();
+                egui::Slider::new(&mut seam_y_angle_deg, 0.0_f32..=180.).ui(ui);
+                ui.end_row();
+                selected_pitch_parameters.0.seam_y_angle = seam_y_angle_deg.to_radians();
+
+                ui.label("z angle (°)");
+                let mut seam_z_angle_deg = selected_pitch_parameters.0.seam_z_angle.to_degrees();
+                egui::Slider::new(&mut seam_z_angle_deg, 0.0_f32..=180.).ui(ui);
+                ui.end_row();
+                selected_pitch_parameters.0.seam_z_angle = seam_z_angle_deg.to_radians();
+            });
         });
     });
 }
@@ -109,8 +114,6 @@ pub(crate) fn spawn_ball(
     mut commands: Commands,
     selected_pitch_parameters: Res<SelectedPitchParameters>,
     query_baseball: Query<Entity, With<BaseballMarker>>,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     if let Ok(_) = query_baseball.get_single() {
         info!("ball already exists");
@@ -137,17 +140,20 @@ pub(crate) fn spawn_ball(
                 RenderLayers::from_layers(&[0]),
             ))
             .with_children(|child| {
+                let seam_y_angle = selected_pitch_parameters.0.seam_y_angle;
+                let seam_z_angle = selected_pitch_parameters.0.seam_z_angle;
+
+                let rot = Quat::from_rotation_y(-seam_y_angle)
+                    .mul_quat(Quat::from_rotation_z(seam_z_angle));
+
                 child.spawn((
-                    PbrBundle {
-                        mesh: meshes.add(Sphere::new(0.03).mesh().uv(32, 18)),
-                        material: materials.add(StandardMaterial {
-                            base_color: Color::WHITE,
-                            perceptual_roughness: 1.0,
-                            ..default()
-                        }),
-                        ..default()
-                    },
+                    BlueprintInfo::from_path("blueprints/Baseball.glb"),
+                    SpawnBlueprint,
+                    HideUntilReady,
                     RenderLayers::from_layers(&[0]),
+                    TransformBundle::from_transform(
+                        Transform::from_scale(0.037 * Vec3::new(1., 1.0, 1.0)).with_rotation(rot),
+                    ),
                 ));
             });
     }
