@@ -46,7 +46,7 @@ fn main() {
     rapier_config.timestep_mode = TimestepMode::Interpolated {
         dt: 1. / 60.,
         substeps: 100,
-        time_scale: 0.1,
+        time_scale: 1.,
     };
     app.add_plugins(RapierPhysicsPlugin::<NoUserData>::default().with_default_system_setup(true))
         .insert_resource(rapier_config);

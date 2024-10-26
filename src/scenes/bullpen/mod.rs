@@ -53,7 +53,7 @@ impl Plugin for BullpenScene {
         )
         .add_systems(
             Update,
-            (params_menu).in_set(GameScenesSet::UpdateSet(*self)),
+            (params_menu,).in_set(GameScenesSet::UpdateSet(*self)),
         )
         .add_systems(
             Update,
