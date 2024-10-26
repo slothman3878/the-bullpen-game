@@ -8,7 +8,6 @@ mod systems;
 use components::*;
 use events::*;
 use resources::*;
-use systems::*;
 
 pub(crate) mod prelude {
     pub(crate) use super::*;
@@ -36,7 +35,7 @@ impl<T: GameScene> Plugin for PitcherPlugin<T> {
         .insert_resource(SelectedPitchParameters(PitchParams {
             gyro_pole: GyroPole::default(),
             spin_efficiency: 1.,
-            speed: 90. * MPH_TO_FTS,
+            speed: 90., // 90. * MPH_TO_FTS,
             spin_rate: 2000.,
             seam_y_angle: 0.,
             seam_z_angle: std::f32::consts::PI / 2.,
