@@ -9,12 +9,6 @@ impl BaseballPreviewImage {
     }
 }
 
-// Add these new resources
-#[derive(Debug, Resource, Default)]
-pub(crate) struct MenuVisibility(pub bool);
-
-pub(crate) fn menu_visibility_is(
-    visibility: bool,
-) -> impl FnMut(Res<MenuVisibility>) -> bool + Clone {
-    move |menu_visibility| menu_visibility.0 == visibility
-}
+// // Add these new resources
+// #[derive(Debug, Resource, Default)]
+// pub(crate) struct MenuVisibility(pub bool);

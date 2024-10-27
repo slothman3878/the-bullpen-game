@@ -48,7 +48,7 @@ impl Plugin for BullpenScene {
             render_layers: vec![0],
         });
 
-        app.insert_resource(MenuVisibility(false));
+        app.insert_resource(MenuState::default());
 
         app.add_systems(
             OnEnter(Self),

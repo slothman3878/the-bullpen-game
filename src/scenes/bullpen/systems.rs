@@ -31,10 +31,6 @@ pub(crate) fn third_person_camera_lock_status(
     }
 }
 
-pub(crate) fn toggle_menu_visibility(mut menu_visibility: ResMut<MenuVisibility>) {
-    menu_visibility.0 = !menu_visibility.0;
-}
-
 pub(crate) fn setup_baseball_preview_scene(
     mut commands: Commands,
     mut images: ResMut<Assets<Image>>,
