@@ -1,4 +1,5 @@
 use crate::prelude::*;
+use std::f32::consts::PI;
 
 pub(crate) fn params_menu(
     mut selected_pitch_parameters: ResMut<SelectedPitchParameters>,
@@ -54,13 +55,13 @@ pub(crate) fn params_menu(
 
                         ui.label("tilt");
                         ui.vertical(|ui| {
-                            let (hr, _) = selected_pitch_parameters.0.tilt.to_hour_minutes();
-                            let mut selected_hr = hr;
+                            let (hr, min) = selected_pitch_parameters.0.tilt.to_hour_minutes();
+                            let mut selected_time = hr as f32 + min as f32 / 60.0;
 
                             // Clock visualization
-                            let (rect, _) = ui.allocate_exact_size(
+                            let (rect, response) = ui.allocate_exact_size(
                                 egui::vec2(100.0, 100.0),
-                                egui::Sense::hover(),
+                                egui::Sense::click_and_drag(),
                             );
                             let painter = ui.painter();
 
@@ -71,9 +72,20 @@ pub(crate) fn params_menu(
                                 egui::Stroke::new(2.0, egui::Color32::WHITE),
                             );
 
+                            // Handle user interaction
+                            if response.dragged() || response.clicked() {
+                                let mouse_pos =
+                                    response.interact_pointer_pos().unwrap_or(rect.center());
+                                let vector = mouse_pos - rect.center();
+                                let angle = (vector.y.atan2(vector.x) + PI * 2.) % (PI * 2.);
+                                selected_time = (angle / (2.0 * PI) * 12.0 + 3.0) % 12.0;
+                                if selected_time.floor() == 0. {
+                                    selected_time += 12.0;
+                                }
+                            }
+
                             // Draw clock hand
-                            let angle = -2.0 * std::f32::consts::PI * (selected_hr as f32 / 12.0)
-                                + std::f32::consts::PI / 2.0;
+                            let angle = -2.0 * PI * (selected_time / 12.0) + PI / 2.0;
                             let hand_end =
                                 rect.center() + egui::vec2(angle.cos() * 40.0, -angle.sin() * 40.0);
                             painter.line_segment(
@@ -81,17 +93,25 @@ pub(crate) fn params_menu(
                                 egui::Stroke::new(2.0, egui::Color32::RED),
                             );
 
+                            // get hr and min
+                            let selected_hr = selected_time.floor() as i8;
+                            let selected_min =
+                                ((selected_time - selected_hr as f32) * 60.0).floor() as i8;
+
                             // Draw 12 o'clock marker
                             let marker_12 = rect.center() + egui::vec2(0.0, -45.0);
                             painter.circle_filled(marker_12, 3.0, egui::Color32::WHITE);
 
-                            // Add some space between the clock and the slider
+                            // Add some space between the clock and the text
                             ui.add_space(10.0);
 
-                            // Add the slider beneath the clock
-                            egui::Slider::new(&mut selected_hr, 1..=12).ui(ui);
+                            // Display the selected hour as text
+                            ui.label(format!("{}:{:02}", selected_hr, selected_min));
+
+                            // Update the tilt in the SelectedPitchParameters
                             selected_pitch_parameters.0.tilt =
-                                Tilt::from_hour_mintes(selected_hr, 0);
+                                Tilt::from_hour_mintes(selected_hr, selected_min)
+                                    .expect("invalid tilt params".into());
                         });
                         ui.end_row();
 
