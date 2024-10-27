@@ -1,3 +1,4 @@
+use super::resources::BaseballPreviewImage;
 use crate::prelude::*;
 
 // render layer 0 has the scene
@@ -21,6 +22,108 @@ pub(crate) fn _spawn_camera(mut commands: Commands) {
     ));
 }
 
+pub(crate) fn setup_baseball_preview_scene(
+    mut commands: Commands,
+    mut images: ResMut<Assets<Image>>,
+    mut egui_user_textures: ResMut<EguiUserTextures>,
+    selected_pitch_parameters: Res<SelectedPitchParameters>,
+    mut query_baseball_preview: Query<&mut Transform, With<PreviewPassBaseballMarker>>,
+) {
+    let size = Extent3d {
+        width: 280,
+        height: 280,
+        ..default()
+    };
+
+    // This is the texture that will be rendered to.
+    let mut image = Image {
+        texture_descriptor: TextureDescriptor {
+            label: None,
+            size,
+            dimension: TextureDimension::D2,
+            format: TextureFormat::Bgra8UnormSrgb,
+            mip_level_count: 1,
+            sample_count: 1,
+            usage: TextureUsages::TEXTURE_BINDING
+                | TextureUsages::COPY_DST
+                | TextureUsages::RENDER_ATTACHMENT,
+            view_formats: &[],
+        },
+        ..default()
+    };
+
+    // fill image.data with zeroes
+    image.resize(size);
+
+    let image_handle = images.add(image);
+    egui_user_textures.add_image(image_handle.clone());
+    commands.insert_resource(BaseballPreviewImage::new(image_handle.clone()));
+
+    // // spawn preview baseball
+    // for some reason the render layers here are completely ignored
+    // for now, just hiding it somewhere fairly far away
+
+    // let seam_y_angle = selected_pitch_parameters.0.seam_y_angle;
+    // let seam_z_angle = selected_pitch_parameters.0.seam_z_angle;
+
+    let render_layer = RenderLayers::from_layers(&[0]);
+
+    // let rot = Quat::from_rotation_y(-seam_y_angle).mul_quat(Quat::from_rotation_z(seam_z_angle));
+    // commands.spawn((
+    //     BlueprintInfo::from_path("blueprints/Baseball.glb"),
+    //     SpawnBlueprint,
+    //     HideUntilReady,
+    //     TransformBundle::from_transform(
+    //         Transform::from_scale(1. * Vec3::new(1., 1.0, 1.0))
+    //             .with_translation(Vec3::new(0., 0., 1.))
+    //             .with_rotation(rot),
+    //     ),
+    //     PreviewPassBaseballMarker,
+    //     render_layer.clone(),
+    // ));
+
+    if let Ok(mut transform) = query_baseball_preview.get_single_mut() {
+        let seam_y_angle = selected_pitch_parameters.0.seam_y_angle;
+        let seam_z_angle = selected_pitch_parameters.0.seam_z_angle;
+        let rot =
+            Quat::from_rotation_y(-seam_y_angle).mul_quat(Quat::from_rotation_z(seam_z_angle));
+        *transform = transform.with_rotation(rot);
+    }
+
+    // The same light is reused for both passes,
+    // you can specify different lights for preview and main pass by setting appropriate RenderLayers.
+    commands.spawn((
+        PointLightBundle {
+            transform: Transform::from_translation(Vec3::new(0.0, -10., 15.0)),
+            ..default()
+        },
+        render_layer.clone(),
+    ));
+
+    // spawn preview pass camera
+    commands.spawn((
+        Camera3dBundle {
+            projection: OrthographicProjection {
+                // 6 world units per window height.
+                scaling_mode: ScalingMode::FixedVertical(3.0),
+                ..default()
+            }
+            .into(),
+            camera: Camera {
+                // render before the "main pass" camera
+                order: -1,
+                target: RenderTarget::Image(image_handle),
+                clear_color: ClearColorConfig::Custom(Color::srgba(1.0, 1.0, 1.0, 0.0)),
+                ..default()
+            },
+            transform: Transform::from_translation(Vec3::new(0.0, -10., 15.0))
+                .looking_at(Vec3::new(0.0, -10., 0.0), Vec3::Y),
+            ..default()
+        },
+        render_layer.clone(),
+    ));
+}
+
 pub(crate) fn setup_scene(mut commands: Commands) {
     // TODO: need to add render layers to blenvy
     commands.spawn((
@@ -28,6 +131,7 @@ pub(crate) fn setup_scene(mut commands: Commands) {
         SpawnBlueprint,
         HideUntilReady,
         GameWorldTag,
+        RenderLayers::from_layers(&[0]),
     ));
 }
 

@@ -86,12 +86,13 @@ pub fn setup_camera(
                         }),
                         camera: Camera {
                             is_active: true,
-                            order: 2,
+                            // order: 2,
                             ..default()
                         },
                         ..default()
                     },
                     RenderLayers::from_layers(&pitcher_plugin_config.render_layers),
+                    // RenderLayers::layer(0),
                     PitcherCameraMarker,
                     Name::new("pitcher camera"),
                     InheritedVisibility::VISIBLE,
@@ -105,6 +106,7 @@ pub fn setup_camera(
                             ..default()
                         },
                         RenderLayers::from_layers(&pitcher_plugin_config.render_layers),
+                        // RenderLayers::layer(0),
                     ));
                 });
         }

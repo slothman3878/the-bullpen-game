@@ -1,4 +1,5 @@
 mod menu;
+mod resources;
 mod systems;
 
 use systems::*;
@@ -31,7 +32,8 @@ impl GameScene for BullpenScene {
     }
 
     fn register_type(&self, app: &mut App) {
-        app.register_type::<GameSceneMarker<Self>>();
+        app.register_type::<GameSceneMarker<Self>>()
+            .register_type::<PreviewPassBaseballMarker>();
     }
 }
 
@@ -49,13 +51,19 @@ impl Plugin for BullpenScene {
             OnEnter(Self),
             (
                 setup_scene,
-                // spawn_camera.after(setup_scene),
+                setup_baseball_preview_scene, // spawn_camera.after(setup_scene),
             )
                 .in_set(GameScenesSet::OnEnterSet(*self)),
         )
         .add_systems(
             Update,
-            (params_menu,).in_set(GameScenesSet::UpdateSet(*self)),
+            (
+                params_menu,
+                update_baseball_preview_3d,
+                // baseball_preview_3d,
+            )
+                .chain()
+                .in_set(GameScenesSet::UpdateSet(*self)),
         )
         .add_systems(
             Update,
@@ -80,3 +88,7 @@ impl Plugin for BullpenScene {
         );
     }
 }
+
+#[derive(Debug, Component, Reflect)]
+#[reflect(Component)]
+pub(crate) struct PreviewPassBaseballMarker;

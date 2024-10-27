@@ -1,13 +1,28 @@
+use bullpen::resources::BaseballPreviewImage;
+
 use crate::prelude::*;
 use std::f32::consts::PI;
 
 pub(crate) fn params_menu(
-    mut selected_pitch_parameters: ResMut<SelectedPitchParameters>,
     mut contexts: EguiContexts,
+    mut selected_pitch_parameters: ResMut<SelectedPitchParameters>,
+    baseball_preview_image: Res<BaseballPreviewImage>,
 ) {
+    let opt_cube_preview_texture_id = contexts.image_id(&baseball_preview_image);
+
     let ctx = contexts.ctx_mut();
+
     egui::Window::new("menu").min_width(300.0).show(ctx, |ui| {
         ui.add_space(10.0); // Add some space at the top
+        if let Some(cube_preview_texture_id) = opt_cube_preview_texture_id {
+            ui.horizontal(|ui| {
+                ui.add_space(50.0); // Add space to the left
+                ui.image(egui::load::SizedTexture::new(
+                    cube_preview_texture_id,
+                    egui::vec2(300., 300.),
+                ));
+            });
+        }
         ui.with_layout(
             egui::Layout::top_down_justified(egui::Align::Center),
             |ui| {
@@ -138,4 +153,34 @@ pub(crate) fn params_menu(
         );
         ui.add_space(10.0); // Add some space at the bottom
     });
+}
+
+pub(crate) fn update_baseball_preview_3d(
+    selected_pitch_parameters: Res<SelectedPitchParameters>,
+    mut query_baseball_preview: Query<&mut Transform, With<PreviewPassBaseballMarker>>,
+) {
+    if let Ok(mut transform) = query_baseball_preview.get_single_mut() {
+        let seam_y_angle = selected_pitch_parameters.0.seam_y_angle;
+        let seam_z_angle = selected_pitch_parameters.0.seam_z_angle;
+        let rot =
+            Quat::from_rotation_y(-seam_y_angle).mul_quat(Quat::from_rotation_z(seam_z_angle));
+        *transform = transform.with_rotation(rot);
+    }
+}
+
+pub(crate) fn baseball_preview_3d(
+    mut contexts: EguiContexts,
+    baseball_preview_image: Res<BaseballPreviewImage>,
+) {
+    if let Some(cube_preview_texture_id) = contexts.image_id(&baseball_preview_image) {
+        let ctx = contexts.ctx_mut();
+        egui::Window::new("Baseball 3D Preview")
+            .default_size([300.0, 300.0])
+            .show(ctx, |ui| {
+                ui.image(egui::load::SizedTexture::new(
+                    cube_preview_texture_id,
+                    egui::vec2(300., 300.),
+                ));
+            });
+    }
 }
