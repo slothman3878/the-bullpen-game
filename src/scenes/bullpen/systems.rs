@@ -4,8 +4,6 @@ use crate::prelude::*;
 // render layer 0 has the scene
 // render layer 1 has the baseball preview
 
-const PI: f32 = std::f32::consts::PI;
-
 pub(crate) fn _spawn_camera(mut commands: Commands) {
     commands.spawn((
         Name::new("fly cam"),
@@ -164,7 +162,10 @@ pub(crate) fn spawn_ball(
                 //
                 ExternalForce::default(),
                 TransformBundle::from_transform(Transform::from_translation(
-                    selected_pitch_parameters.0.starting_point,
+                    match selected_pitch_parameters.0.pitching_arm {
+                        PitchingArm::Lefty => PITCH_DEFAULT_STARTING_POINT_LEFTY,
+                        PitchingArm::Righty => PITCH_DEFAULT_STARTING_POINT_RIGHTY,
+                    },
                 )),
                 Velocity::default(),
                 //
@@ -207,6 +208,10 @@ pub(crate) fn launch_ball(
         if let Ok(camera_global_transform) = camera_query.get_single() {
             let camera_transform = camera_global_transform.compute_transform();
             let ray_origin = camera_transform.translation;
+            let start_pos = match selected_pitch_parameters.0.pitching_arm {
+                PitchingArm::Lefty => PITCH_DEFAULT_STARTING_POINT_LEFTY,
+                PitchingArm::Righty => PITCH_DEFAULT_STARTING_POINT_RIGHTY,
+            };
             let ray_dir = camera_transform.rotation.mul_vec3(-Vec3::Z).normalize();
             let max_toi = f32::INFINITY;
             let query = QueryFilter::new();
@@ -215,7 +220,7 @@ pub(crate) fn launch_ball(
             {
                 Some((_entity, toi)) => {
                     let aim_point = ray_origin + ray_dir * toi;
-                    (aim_point - ray_origin).normalize()
+                    (aim_point - start_pos).normalize()
                 }
                 None => ray_dir,
             };
@@ -224,13 +229,13 @@ pub(crate) fn launch_ball(
         }
 
         let PitchParams {
+            pitching_arm: _,
             gyro_pole,
             spin_efficiency,
             speed,
             spin_rate,
             seam_z_angle,
             tilt,
-            starting_point: _,
             direction,
             seam_y_angle,
         } = selected_pitch_parameters.0;
@@ -262,144 +267,3 @@ pub(crate) fn launch_ball(
         });
     }
 }
-
-// pub(crate) fn baseball_preview_3d(
-//     mut commands: Commands,
-//     mut meshes: ResMut<Assets<Mesh>>,
-//     mut materials: ResMut<Assets<StandardMaterial>>,
-//     mut contexts: EguiContexts,
-//     mut images: ResMut<Assets<Image>>,
-//     selected_pitch_parameters: Res<SelectedPitchParameters>,
-//     query: Query<(Entity, &Handle<Image>), With<BaseballPreviewMarker>>,
-// ) {
-//     let ctx = contexts.ctx_mut();
-
-//     egui::Window::new("Baseball 3D Preview")
-//         .default_size([300.0, 300.0])
-//         .show(ctx, |ui| {
-//             let (rect, response) =
-//                 ui.allocate_exact_size(egui::vec2(280.0, 280.0), egui::Sense::drag());
-
-//             // Create or update the 3D scene
-//             if query.is_empty() {
-//                 // Create a new 3D scene
-//                 let size = rect.size();
-//                 let image_handle = render_baseball_3d(
-//                     &mut commands,
-//                     &mut meshes,
-//                     &mut materials,
-//                     &mut images,
-//                     size.x as u32,
-//                     size.y as u32,
-//                     &selected_pitch_parameters,
-//                 );
-//                 let texture_id = contexts.add_image(image_handle.clone());
-//                 ui.image(texture_id, size);
-//             } else {
-//                 // Update existing 3D scene
-//                 for (entity, image_handle) in query.iter() {
-//                     update_baseball_3d(&mut commands, entity, &selected_pitch_parameters);
-//                     let texture_id = contexts.add_image(image_handle.clone());
-//                     ui.image(texture_id, rect.size());
-//                 }
-//             }
-
-//             // Handle user interaction (rotation)
-//             if response.dragged() {
-//                 // Implement rotation logic here
-//             }
-//         });
-// }
-
-// fn render_baseball_3d(
-//     commands: &mut Commands,
-//     meshes: &mut Assets<Mesh>,
-//     materials: &mut Assets<StandardMaterial>,
-//     images: &mut Assets<Image>,
-//     width: u32,
-//     height: u32,
-//     params: &SelectedPitchParameters,
-// ) -> Handle<Image> {
-//     // Create a new render target
-//     let size = Extent3d {
-//         width,
-//         height,
-//         ..default()
-//     };
-//     let mut image = Image {
-//         texture_descriptor: TextureDescriptor {
-//             size,
-//             dimension: TextureDimension::D2,
-//             format: TextureFormat::Rgba8UnormSrgb,
-//             usage: TextureUsages::TEXTURE_BINDING
-//                 | TextureUsages::COPY_DST
-//                 | TextureUsages::RENDER_ATTACHMENT,
-//             ..default()
-//         },
-//         ..default()
-//     };
-//     image.resize(size);
-
-//     let image_handle = images.add(image);
-
-//     // Create a 3D scene
-//     let camera = commands
-//         .spawn((
-//             Camera3dBundle {
-//                 transform: Transform::from_translation(Vec3::new(0.0, 0.0, 5.0))
-//                     .looking_at(Vec3::ZERO, Vec3::Y),
-//                 ..default()
-//             },
-//             RenderLayers::from_layers(&[2]),
-//         ))
-//         .id();
-
-//     let baseball = commands
-//         .spawn((
-//             PbrBundle {
-//                 mesh: meshes.add(Mesh::from(shape::UVSphere {
-//                     radius: 1.0,
-//                     sectors: 32,
-//                     stacks: 16,
-//                 })),
-//                 material: materials.add(StandardMaterial {
-//                     base_color: Color::WHITE,
-//                     ..default()
-//                 }),
-//                 transform: Transform::from_rotation(Quat::from_euler(
-//                     EulerRot::YXZ,
-//                     params.0.seam_y_angle,
-//                     0.0,
-//                     params.0.seam_z_angle,
-//                 )),
-//                 ..default()
-//             },
-//             BaseballPreviewMarker,
-//         ))
-//         .id();
-
-//     // Set up the render pipeline
-//     commands.spawn(Camera2dBundle {
-//         camera: Camera {
-//             target: RenderTarget::Image(image_handle.clone()),
-//             ..default()
-//         },
-//         ..default()
-//     });
-
-//     image_handle
-// }
-
-// fn update_baseball_3d(commands: &mut Commands, entity: Entity, params: &SelectedPitchParameters) {
-//     commands
-//         .entity(entity)
-//         .insert(Transform::from_rotation(Quat::from_euler(
-//             EulerRot::YXZ,
-//             params.0.seam_y_angle,
-//             0.0,
-//             params.0.seam_z_angle,
-//         )));
-// }
-
-// #[derive(Component)]
-// struct BaseballPreviewMarker;

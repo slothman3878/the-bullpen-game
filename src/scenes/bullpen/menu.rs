@@ -12,23 +12,28 @@ pub(crate) fn params_menu(
 
     let ctx = contexts.ctx_mut();
 
-    egui::Window::new("menu").min_width(300.0).show(ctx, |ui| {
+    egui::Window::new("menu").min_width(600.0).show(ctx, |ui| {
         ui.add_space(10.0); // Add some space at the top
-        if let Some(cube_preview_texture_id) = opt_cube_preview_texture_id {
-            ui.horizontal(|ui| {
-                ui.add_space(50.0); // Add space to the left
-                ui.image(egui::load::SizedTexture::new(
-                    cube_preview_texture_id,
-                    egui::vec2(300., 300.),
-                ));
-            });
-        }
-        ui.with_layout(
-            egui::Layout::top_down_justified(egui::Align::Center),
-            |ui| {
+        ui.horizontal(|ui| {
+            // Parameters section
+            ui.vertical(|ui| {
                 egui::Grid::new("parameters")
                     .spacing([50.0, 50.0])
                     .show(ui, |ui| {
+                        ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
+                            ui.selectable_value(
+                                &mut selected_pitch_parameters.0.pitching_arm,
+                                PitchingArm::Lefty,
+                                "Lefty",
+                            );
+                            ui.selectable_value(
+                                &mut selected_pitch_parameters.0.pitching_arm,
+                                PitchingArm::Righty,
+                                "Righty",
+                            );
+                        });
+                        ui.end_row();
+
                         ui.label("speed (mph)");
                         egui::Slider::new(
                             &mut selected_pitch_parameters.0.speed,
@@ -129,28 +134,40 @@ pub(crate) fn params_menu(
                                     .expect("invalid tilt params".into());
                         });
                         ui.end_row();
-
-                        ui.label("seam orientation");
-                        egui::Grid::new("seam orientation").show(ui, |ui| {
-                            ui.label("y angle (°)");
-                            let mut seam_y_angle_deg =
-                                selected_pitch_parameters.0.seam_y_angle.to_degrees();
-                            egui::Slider::new(&mut seam_y_angle_deg, 0.0_f32..=180.).ui(ui);
-                            ui.end_row();
-                            selected_pitch_parameters.0.seam_y_angle =
-                                seam_y_angle_deg.to_radians();
-
-                            ui.label("z angle (°)");
-                            let mut seam_z_angle_deg =
-                                selected_pitch_parameters.0.seam_z_angle.to_degrees();
-                            egui::Slider::new(&mut seam_z_angle_deg, 0.0_f32..=180.).ui(ui);
-                            ui.end_row();
-                            selected_pitch_parameters.0.seam_z_angle =
-                                seam_z_angle_deg.to_radians();
-                        });
                     });
-            },
-        );
+            });
+
+            ui.add_space(20.0); // Add some space between sections
+
+            // Preview section and seam orientation
+            ui.vertical(|ui| {
+                if let Some(cube_preview_texture_id) = opt_cube_preview_texture_id {
+                    ui.image(egui::load::SizedTexture::new(
+                        cube_preview_texture_id,
+                        egui::vec2(300., 300.),
+                    ));
+                }
+
+                ui.add_space(10.0); // Add some space between preview and sliders
+
+                ui.label("Seam Orientation");
+                egui::Grid::new("seam orientation").show(ui, |ui| {
+                    ui.label("y angle (°)");
+                    let mut seam_y_angle_deg =
+                        selected_pitch_parameters.0.seam_y_angle.to_degrees();
+                    egui::Slider::new(&mut seam_y_angle_deg, 0.0_f32..=180.).ui(ui);
+                    ui.end_row();
+                    selected_pitch_parameters.0.seam_y_angle = seam_y_angle_deg.to_radians();
+
+                    ui.label("z angle (°)");
+                    let mut seam_z_angle_deg =
+                        selected_pitch_parameters.0.seam_z_angle.to_degrees();
+                    egui::Slider::new(&mut seam_z_angle_deg, 0.0_f32..=180.).ui(ui);
+                    ui.end_row();
+                    selected_pitch_parameters.0.seam_z_angle = seam_z_angle_deg.to_radians();
+                });
+            });
+        });
         ui.add_space(10.0); // Add some space at the bottom
     });
 }

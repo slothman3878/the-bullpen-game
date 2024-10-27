@@ -13,6 +13,8 @@ pub(crate) mod prelude {
     pub(crate) use super::*;
     pub(crate) use components::*;
     pub(crate) use resources::*;
+    pub(crate) const PITCH_DEFAULT_STARTING_POINT_RIGHTY: Vec3 = Vec3::new(0.48, 1.82, 16.764);
+    pub(crate) const PITCH_DEFAULT_STARTING_POINT_LEFTY: Vec3 = Vec3::new(-0.48, 1.82, 16.764);
 }
 
 #[derive(Debug)]
@@ -40,10 +42,13 @@ impl<T: GameScene> Plugin for PitcherPlugin<T> {
             seam_y_angle: 0.,
             seam_z_angle: std::f32::consts::PI / 2.,
             tilt: Tilt::from_hour_mintes(12, 0).expect("invalid initial tilt params".into()),
-            starting_point: Vec3::new(0.48, 1.82, 16.764),
+            // starting_point: Vec3::new(0.48, 1.82, 16.764),
+            pitching_arm: PitchingArm::Righty,
             direction: Vec3::ZERO,
         }));
         // app.add_systems(OnEnter(self.scene.clone()), spawn_arms);
+
+        app.add_systems(OnEnter(self.scene.clone()), spawn_pitcher);
 
         app.add_systems(
             Update,
@@ -52,6 +57,13 @@ impl<T: GameScene> Plugin for PitcherPlugin<T> {
                 .in_set(GltfBlueprintsSet::AfterSpawn),
         );
     }
+}
+
+pub fn spawn_pitcher(mut commands: Commands) {
+    commands.spawn((
+        TransformBundle::from_transform(Transform::from_translation(Vec3::new(0., 0.15, 18.44))),
+        PitcherCameraTargetMarker,
+    ));
 }
 
 pub fn setup_camera(
@@ -74,7 +86,7 @@ pub fn setup_camera(
                         aim_speed: 5.0,
                         cursor_lock_toggle_enabled: true,
                         offset_enabled: true,
-                        offset: Offset::new(0.5, 1.7),
+                        offset: Offset::new(0., 1.7),
                         zoom: Zoom::new(8., 20.),
                         cursor_lock_key: KeyCode::Escape,
                         ..default()

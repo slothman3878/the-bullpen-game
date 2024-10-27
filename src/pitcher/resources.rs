@@ -12,7 +12,8 @@ pub(crate) struct SelectedPitchParameters(pub PitchParams);
 pub(crate) struct PitchParams {
     // not a parameter controlled by user
     // dependent on release moment, player stats, etc
-    pub starting_point: Vec3,
+    // pub starting_point: Vec3,
+    pub pitching_arm: PitchingArm,
     pub speed: f32,     // mph
     pub spin_rate: f32, // rpm
     pub direction: Vec3,
@@ -26,4 +27,10 @@ pub(crate) struct PitchParams {
     pub gyro_pole: GyroPole,
     pub seam_y_angle: f32,
     pub seam_z_angle: f32,
+}
+
+#[derive(Debug, Reflect, Copy, Clone, Eq, PartialEq)]
+pub(crate) enum PitchingArm {
+    Lefty,
+    Righty,
 }
