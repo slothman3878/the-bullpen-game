@@ -9,6 +9,7 @@ use menu::*;
 
 pub(crate) mod prelude {
     pub(crate) use super::*;
+    pub(crate) use resources::*;
 }
 
 // bullpen scene
@@ -47,6 +48,8 @@ impl Plugin for BullpenScene {
             render_layers: vec![0],
         });
 
+        app.insert_resource(MenuVisibility(false));
+
         app.add_systems(
             OnEnter(Self),
             (
@@ -58,9 +61,14 @@ impl Plugin for BullpenScene {
         .add_systems(
             Update,
             (
-                params_menu,
-                update_baseball_preview_3d,
-                // baseball_preview_3d,
+                (
+                    params_menu,
+                    update_baseball_preview_3d, // baseball_preview_3d,
+                )
+                    .run_if(menu_visibility_is(true)),
+                (toggle_menu_visibility, third_person_camera_lock_status)
+                    .chain()
+                    .run_if(input_just_pressed(KeyCode::Escape)),
             )
                 .chain()
                 .in_set(GameScenesSet::UpdateSet(*self)),

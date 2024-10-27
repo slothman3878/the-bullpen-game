@@ -20,6 +20,21 @@ pub(crate) fn _spawn_camera(mut commands: Commands) {
     ));
 }
 
+pub(crate) fn third_person_camera_lock_status(
+    query_third_person_camera: Query<&ThirdPersonCamera, With<PitcherCameraMarker>>,
+) {
+    if let Ok(third_person_camera) = query_third_person_camera.get_single() {
+        info!(
+            "third person camera lock status: {:?}",
+            third_person_camera.cursor_lock_active
+        );
+    }
+}
+
+pub(crate) fn toggle_menu_visibility(mut menu_visibility: ResMut<MenuVisibility>) {
+    menu_visibility.0 = !menu_visibility.0;
+}
+
 pub(crate) fn setup_baseball_preview_scene(
     mut commands: Commands,
     mut images: ResMut<Assets<Image>>,

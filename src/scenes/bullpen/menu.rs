@@ -1,5 +1,3 @@
-use bullpen::resources::BaseballPreviewImage;
-
 use crate::prelude::*;
 use std::f32::consts::PI;
 
