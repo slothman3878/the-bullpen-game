@@ -36,20 +36,20 @@ fn main() {
     app.insert_resource(Time::<Fixed>::from_hz(60.0));
 
     let mut rapier_config = RapierConfiguration::new(1.);
-    // rapier_config.timestep_mode = TimestepMode::Fixed {
-    //     dt: 1. / 600.,
-    //     substeps: 10,
-    // };
+    rapier_config.timestep_mode = TimestepMode::Fixed {
+        dt: 1. / 60.,
+        substeps: 100,
+    };
     // rapier_config.timestep_mode = TimestepMode::Variable {
     //     max_dt: 1.0 / 60.0,
     //     time_scale: 1.,
     //     substeps: 100,
     // };
-    rapier_config.timestep_mode = TimestepMode::Interpolated {
-        dt: 1. / 60.,
-        substeps: 100,
-        time_scale: 1.,
-    };
+    // rapier_config.timestep_mode = TimestepMode::Interpolated {
+    //     dt: 1. / 60.,
+    //     substeps: 100,
+    //     time_scale: 1.,
+    // };
 
     // let mut rapier_context = RapierContext::default();
     // rapier_context.integration_parameters.max_ccd_substeps = 100;
