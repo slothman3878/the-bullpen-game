@@ -26,6 +26,7 @@ pub(crate) fn toggle_menu_visibility(mut menu_visibility: ResMut<MenuState>) {
 pub(crate) fn params_menu(
     mut contexts: EguiContexts,
     mut selected_pitch_parameters: ResMut<SelectedPitchParameters>,
+    mut active_batter_tracker: ResMut<ActiveBatterTracker>,
     baseball_preview_image: Res<BaseballPreviewImage>,
     mut menu_state: ResMut<MenuState>,
     mut exit: EventWriter<AppExit>,
@@ -63,6 +64,22 @@ pub(crate) fn params_menu(
                                 egui::Grid::new("parameters").spacing([50.0, 50.0]).show(
                                     ui,
                                     |ui| {
+                                        // in cm
+                                        let mut batter_height = active_batter_tracker.height * 100.;
+                                        ui.label("batter height (cm)");
+                                        egui::Slider::new(
+                                            &mut batter_height,
+                                            150.0_f32..=200.0_f32,
+                                        )
+                                        .ui(ui);
+                                        ui.end_row();
+                                        if (batter_height / 100. - active_batter_tracker.height)
+                                            .abs()
+                                            >= 0.01
+                                        {
+                                            active_batter_tracker.height = batter_height / 100.;
+                                        }
+
                                         ui.label("Pitching Arm");
                                         ui.with_layout(
                                             egui::Layout::left_to_right(egui::Align::TOP),

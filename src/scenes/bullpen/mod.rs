@@ -50,6 +50,7 @@ impl Plugin for BullpenScene {
         .add_plugins(StrikezonePlugin::<BullpenScene> { scene: *self });
 
         app.insert_resource(MenuState::default());
+        app.insert_resource(ActiveBatterTracker { height: 1.8 });
 
         app.add_systems(
             OnEnter(Self),
@@ -61,6 +62,15 @@ impl Plugin for BullpenScene {
                 .chain()
                 .in_set(GameScenesSet::OnEnterSet(*self)),
         )
+        // resource trackers
+        .add_systems(
+            Update,
+            (
+                active_batter_changed, //
+            )
+                .in_set(GameScenesSet::UpdateSet(*self)),
+        )
+        // menu systems
         .add_systems(
             Update,
             (
@@ -69,7 +79,10 @@ impl Plugin for BullpenScene {
                     update_baseball_preview_3d, // baseball_preview_3d,
                 )
                     .run_if(menu_visibility_is(true)),
-                (toggle_menu_visibility, third_person_camera_lock_status)
+                (
+                    toggle_menu_visibility,
+                    third_person_camera_lock_status, //
+                )
                     .chain()
                     .run_if(input_just_pressed(KeyCode::Escape)),
             )
