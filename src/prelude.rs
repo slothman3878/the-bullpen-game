@@ -3,6 +3,7 @@ pub(crate) use blenvy_extensions::*;
 
 pub(crate) use bevy::{
     diagnostic::LogDiagnosticsPlugin,
+    ecs::system::QueryLens,
     input::{common_conditions::*, prelude::*},
     math::DVec3,
     math::*,

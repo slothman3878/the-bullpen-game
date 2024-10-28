@@ -35,6 +35,7 @@ impl GameScene for BullpenScene {
     fn register_type(&self, app: &mut App) {
         app.register_type::<GameSceneMarker<Self>>()
             .register_type::<PreviewPassBaseballMarker>()
+            .register_type::<PreviewPassBaseballAxisMarker>()
             .register_type::<StrikezoneSpawnRequestMarker>();
     }
 }
@@ -129,3 +130,7 @@ impl Plugin for BullpenScene {
 #[derive(Debug, Component, Reflect)]
 #[reflect(Component)]
 pub(crate) struct PreviewPassBaseballMarker;
+
+#[derive(Debug, Component, Reflect)]
+#[reflect(Component)]
+pub(crate) struct PreviewPassBaseballAxisMarker;

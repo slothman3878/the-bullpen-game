@@ -15224,6 +15224,17 @@
       "type": "object",
       "typeInfo": "Struct"
     },
+    "the_bullpen_game::scenes::bullpen::PreviewPassBaseballAxisMarker": {
+      "additionalProperties": false,
+      "isComponent": true,
+      "isResource": false,
+      "long_name": "the_bullpen_game::scenes::bullpen::PreviewPassBaseballAxisMarker",
+      "properties": {},
+      "required": [],
+      "short_name": "PreviewPassBaseballAxisMarker",
+      "type": "object",
+      "typeInfo": "Struct"
+    },
     "the_bullpen_game::scenes::bullpen::PreviewPassBaseballMarker": {
       "additionalProperties": false,
       "isComponent": true,

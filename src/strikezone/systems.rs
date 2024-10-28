@@ -109,17 +109,19 @@ pub(crate) fn draw_panels(
                     transform.translation,
                     transform.rotation,
                     *dimensions * 2.,
-                    Color::srgba(0.1, 0.1, 0.9, 1.),
+                    // Color::srgba(0.1, 0.1, 0.9, 1.),
+                    Color::srgba(0.9, 0.9, 0.9, 1.),
                 );
             }
-            StrikezonePanel::Back { dimensions, .. } => {
-                gizmos.rect(
-                    transform.translation,
-                    transform.rotation,
-                    *dimensions * 2.,
-                    Color::srgba(0.9, 0.4, 0.9, 1.),
-                );
-            }
+            // StrikezonePanel::Back { dimensions, .. } => {
+            //     gizmos.rect(
+            //         transform.translation,
+            //         transform.rotation,
+            //         *dimensions * 2.,
+            //         Color::srgba(0.9, 0.4, 0.9, 1.),
+            //     );
+            // }
+            _ => {}
         }
     }
 }

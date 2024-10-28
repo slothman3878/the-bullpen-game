@@ -37,6 +37,7 @@ pub(crate) fn params_menu(
 
     egui::Window::new("menu").min_width(600.0).show(ctx, |ui| {
         ui.set_min_width(600.0);
+        ui.set_max_width(600.0);
 
         // Add tabs at the top of the window
         egui::TopBottomPanel::top("tabs").show_inside(ui, |ui| {
@@ -69,7 +70,7 @@ pub(crate) fn params_menu(
                                         ui.label("batter height (cm)");
                                         egui::Slider::new(
                                             &mut batter_height,
-                                            150.0_f32..=240.0_f32,
+                                            140.0_f32..=210.0_f32,
                                         )
                                         .ui(ui);
                                         ui.end_row();
@@ -265,6 +266,7 @@ pub(crate) fn params_menu(
                             ui.label("• Aim with mouse");
                             ui.label("• Right Mouse Button to aim, then release to launch");
                             ui.label("• Press R to reset ball");
+                            ui.label("• Use mouse wheel to zoom in and out");
                         });
                     }
                     MenuTab::Settings => {
@@ -282,7 +284,20 @@ pub(crate) fn params_menu(
 
 pub(crate) fn update_baseball_preview_3d(
     selected_pitch_parameters: Res<SelectedPitchParameters>,
-    mut query_baseball_preview: Query<&mut Transform, With<PreviewPassBaseballMarker>>,
+    mut query_baseball_preview: Query<
+        &mut Transform,
+        (
+            With<PreviewPassBaseballMarker>,
+            Without<PreviewPassBaseballAxisMarker>,
+        ),
+    >,
+    mut query_baseball_preview_axis: Query<
+        &mut Transform,
+        (
+            With<PreviewPassBaseballAxisMarker>,
+            Without<PreviewPassBaseballMarker>,
+        ),
+    >,
 ) {
     if let Ok(mut transform) = query_baseball_preview.get_single_mut() {
         let seam_y_angle = selected_pitch_parameters.0.seam_y_angle;
@@ -290,5 +305,23 @@ pub(crate) fn update_baseball_preview_3d(
         let rot =
             Quat::from_rotation_y(-seam_y_angle).mul_quat(Quat::from_rotation_z(seam_z_angle));
         *transform = transform.with_rotation(rot);
+    }
+    if let Ok(mut transform) = query_baseball_preview_axis.get_single_mut() {
+        let PitchParams {
+            pitching_arm: _,
+            gyro_pole,
+            spin_efficiency,
+            speed: _,
+            spin_rate,
+            seam_z_angle: _,
+            tilt,
+            direction: _,
+            seam_y_angle: _,
+        } = selected_pitch_parameters.0;
+        let spin_axis =
+            get_angular_velocity_from_parameters(tilt, spin_efficiency, spin_rate, gyro_pole)
+                .from_baseball_coord_to_bevy()
+                .normalize();
+        *transform = transform.with_rotation(Quat::from_rotation_arc(Vec3::Y, spin_axis));
     }
 }

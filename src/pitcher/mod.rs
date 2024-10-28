@@ -87,7 +87,7 @@ pub fn setup_camera(
                         cursor_lock_toggle_enabled: true,
                         offset_enabled: true,
                         offset: Offset::new(0., 1.7),
-                        zoom: Zoom::new(8., 20.),
+                        zoom: Zoom::new(8., 15.),
                         cursor_lock_key: KeyCode::Escape,
                         ..default()
                     },

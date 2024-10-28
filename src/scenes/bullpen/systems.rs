@@ -110,7 +110,7 @@ pub(crate) fn setup_baseball_preview_scene(
     commands.spawn((
         Camera3dBundle {
             projection: OrthographicProjection {
-                scaling_mode: ScalingMode::FixedVertical(3.0),
+                scaling_mode: ScalingMode::FixedVertical(4.0),
                 ..default()
             }
             .into(),
@@ -253,21 +253,23 @@ pub(crate) fn launch_ball(
             seam_y_angle,
         } = selected_pitch_parameters.0;
 
-        let fixed_spin_rate = if spin_rate == 0. { 1. } else { spin_rate };
+        // let fixed_spin_rate = if spin_rate == 0. { 1. } else { spin_rate };
 
-        let gyro = match gyro_pole {
-            GyroPole::Left => spin_efficiency.asin(),
-            GyroPole::Right => std::f32::consts::PI - spin_efficiency.asin(),
-        };
+        // let gyro = match gyro_pole {
+        //     GyroPole::Left => spin_efficiency.asin(),
+        //     GyroPole::Right => std::f32::consts::PI - spin_efficiency.asin(),
+        // };
 
-        let spin_x_0 = fixed_spin_rate * (spin_efficiency * tilt.get().sin());
-        let spin_y_0 = fixed_spin_rate * gyro.cos(); // ((1. - spin_efficiency.powi(2)).sqrt());
-        let spin_z_0 = -fixed_spin_rate * (spin_efficiency * tilt.get().cos());
-        let spin = Vec3::new(
-            spin_x_0 * RPM_TO_RADS,
-            spin_y_0 * RPM_TO_RADS, // - RPM_TO_RAD ???
-            spin_z_0 * RPM_TO_RADS,
-        );
+        // let spin_x_0 = fixed_spin_rate * (spin_efficiency * tilt.get().sin());
+        // let spin_y_0 = fixed_spin_rate * gyro.cos(); // ((1. - spin_efficiency.powi(2)).sqrt());
+        // let spin_z_0 = -fixed_spin_rate * (spin_efficiency * tilt.get().cos());
+        // let spin = Vec3::new(
+        //     spin_x_0 * RPM_TO_RADS,
+        //     spin_y_0 * RPM_TO_RADS, // - RPM_TO_RAD ???
+        //     spin_z_0 * RPM_TO_RADS,
+        // );
+        let spin =
+            get_angular_velocity_from_parameters(tilt, spin_efficiency, spin_rate, gyro_pole);
 
         velocity.linvel = direction * speed * 0.44704; // 0.3048;
         velocity.angvel = spin.from_baseball_coord_to_bevy();
