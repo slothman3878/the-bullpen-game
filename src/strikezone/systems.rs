@@ -70,7 +70,7 @@ pub(crate) fn record_strikezone_collision_system(
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     for ev in ev_record.read() {
-        if let Ok((mut panel, global_transform)) = query_strikezone.get_mut(ev.panel) {
+        if let Ok((mut panel, _)) = query_strikezone.get_mut(ev.panel) {
             if let Ok(_) = panel.set_collision_point(ev.collision_point) {
                 info!("collision point updated");
                 // unfortunately, the z pos of the records is not the correct z pos at collision
@@ -79,11 +79,7 @@ pub(crate) fn record_strikezone_collision_system(
                     .spawn((
                         BallStrikezoneCollisionMarker,
                         InheritedVisibility::VISIBLE,
-                        TransformBundle::from(Transform::from_translation(vec3(
-                            ev.collision_point.x,
-                            ev.collision_point.y,
-                            global_transform.translation().z,
-                        ))),
+                        TransformBundle::from(Transform::from_translation(ev.collision_point)),
                     ))
                     .with_children(|parent| {
                         let color = match *panel {

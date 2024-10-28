@@ -20,7 +20,9 @@ pub(crate) use bevy::{
 };
 pub(crate) use bevy_egui::{egui, egui::Widget, EguiContexts, EguiPlugin, EguiUserTextures};
 pub(crate) use bevy_rapier3d::prelude::*;
-pub(crate) use bevy_rapier_baseball_flight::{prelude::*, AeroActivationSet};
+pub(crate) use bevy_rapier_baseball_flight::{
+    prelude::*, AeroActivationSet, UpdateBaseballFlightStateSet,
+};
 pub(crate) use bevy_third_person_camera::*;
 pub(crate) use blenvy::*;
 

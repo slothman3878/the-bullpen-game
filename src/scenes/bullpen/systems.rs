@@ -269,7 +269,6 @@ pub(crate) fn launch_ball(
             spin_z_0 * RPM_TO_RADS,
         );
 
-        info!("speed: {:?}", speed);
         velocity.linvel = direction * speed * 0.44704; // 0.3048;
         velocity.angvel = spin.from_baseball_coord_to_bevy();
 
@@ -277,18 +276,22 @@ pub(crate) fn launch_ball(
             entity,
             seam_y_angle,
             seam_z_angle,
+            //
+            record_times: vec![],
+            //
+            strikezone_panels_z: (DEFAULT_FRONT_PANEL_POS_Z, DEFAULT_BACK_PANEL_POS_Z),
         });
     }
 }
 
 pub(crate) fn display_strikezone_panel_intersection_info(
-    query_strikezone_panel: Query<Entity, With<StrikezonePanel>>,
-    query_baseball_transform: Query<&Transform, With<BaseballMarker>>,
+    query_strikezone_panel: Query<(Entity, &StrikezonePanel)>,
+    query_baseball_state: Query<&BaseballFlightState, With<BaseballMarker>>,
     mut collision_events: EventReader<CollisionEvent>,
     mut ev_record: EventWriter<RecordStrikezoneCollision>,
 ) {
     for collision_event in collision_events.read() {
-        for entity in query_strikezone_panel.iter() {
+        for (entity, panel) in query_strikezone_panel.iter() {
             match collision_event {
                 // CollisionEvent::Started(collider1, collider2, _) => {}
                 CollisionEvent::Stopped(collider1, collider2, event_flag) => {
@@ -300,13 +303,21 @@ pub(crate) fn display_strikezone_panel_intersection_info(
                         } else {
                             None
                         };
+
                         if let Some(baseball_entity) = baseball_entity {
-                            if let Ok(baseball_transform) =
-                                query_baseball_transform.get(*baseball_entity)
-                            {
+                            if let Ok(baseball_state) = query_baseball_state.get(*baseball_entity) {
+                                let collision_point = match panel {
+                                    StrikezonePanel::Front { .. } => {
+                                        baseball_state.get_pos_at_strikezone_panels_z().0
+                                    }
+                                    StrikezonePanel::Back { .. } => {
+                                        baseball_state.get_pos_at_strikezone_panels_z().1
+                                    }
+                                };
+                                info!("collision point: {:?}", collision_point);
                                 ev_record.send(RecordStrikezoneCollision {
                                     panel: entity,
-                                    collision_point: baseball_transform.translation,
+                                    collision_point,
                                 });
                             }
                         }

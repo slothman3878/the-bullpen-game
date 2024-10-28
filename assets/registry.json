@@ -229,19 +229,6 @@
       "type": "array",
       "typeInfo": "List"
     },
-    "alloc::vec::Vec<glam::DVec3>": {
-      "isComponent": false,
-      "isResource": false,
-      "items": {
-        "type": {
-          "$ref": "#/$defs/glam::DVec3"
-        }
-      },
-      "long_name": "alloc::vec::Vec<glam::DVec3>",
-      "short_name": "Vec<DVec3>",
-      "type": "array",
-      "typeInfo": "List"
-    },
     "alloc::vec::Vec<glam::Quat>": {
       "isComponent": false,
       "isResource": false,
@@ -8421,55 +8408,6 @@
         "enabled"
       ],
       "short_name": "DebugRenderContext",
-      "type": "object",
-      "typeInfo": "Struct"
-    },
-    "bevy_rapier_baseball_flight::ball_flight_state::BaseballFlightState": {
-      "additionalProperties": false,
-      "isComponent": false,
-      "isResource": false,
-      "long_name": "bevy_rapier_baseball_flight::ball_flight_state::BaseballFlightState",
-      "properties": {
-        "active": {
-          "type": {
-            "$ref": "#/$defs/bool"
-          }
-        },
-        "seams": {
-          "type": {
-            "$ref": "#/$defs/alloc::vec::Vec<glam::DVec3>"
-          }
-        },
-        "spin": {
-          "type": {
-            "$ref": "#/$defs/glam::DVec3"
-          }
-        },
-        "time_elapsed": {
-          "type": {
-            "$ref": "#/$defs/f64"
-          }
-        },
-        "translation": {
-          "type": {
-            "$ref": "#/$defs/glam::DVec3"
-          }
-        },
-        "v": {
-          "type": {
-            "$ref": "#/$defs/glam::DVec3"
-          }
-        }
-      },
-      "required": [
-        "translation",
-        "v",
-        "spin",
-        "seams",
-        "time_elapsed",
-        "active"
-      ],
-      "short_name": "BaseballFlightState",
       "type": "object",
       "typeInfo": "Struct"
     },

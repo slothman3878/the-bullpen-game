@@ -64,7 +64,7 @@ fn main() {
             .add_plugins(RapierDebugRenderPlugin::default())
             .add_plugins(WorldInspectorPlugin::new());
 
-        app.add_systems(Update, display_events);
+        // app.add_systems(Update, display_events);
     }
 
     app.add_plugins((BlenvyPlugin::default(), BlenvyExtensions));

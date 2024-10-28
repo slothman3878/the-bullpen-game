@@ -119,7 +119,9 @@ impl Plugin for BullpenScene {
         )
         .add_systems(
             Update,
-            display_strikezone_panel_intersection_info.in_set(GameScenesSet::UpdateSet(*self)),
+            display_strikezone_panel_intersection_info
+                .in_set(UpdateBaseballFlightStateSet::PostUpdate)
+                .in_set(GameScenesSet::UpdateSet(*self)),
         );
     }
 }
