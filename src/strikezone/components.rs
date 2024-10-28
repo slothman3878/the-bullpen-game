@@ -25,14 +25,14 @@ pub(crate) enum StrikezonePanel {
 }
 
 impl StrikezonePanel {
-    pub fn is_updated(&self) -> bool {
+    pub(crate) fn is_updated(&self) -> bool {
         match self {
             Self::Front { updated, .. } => *updated,
             Self::Back { updated, .. } => *updated,
         }
     }
 
-    pub fn collision_point(&self) -> Vec3 {
+    pub(crate) fn collision_point(&self) -> Vec3 {
         match self {
             Self::Front {
                 collision_point, ..
@@ -43,14 +43,14 @@ impl StrikezonePanel {
         }
     }
 
-    pub fn dimensions(&self) -> Vec2 {
+    pub(crate) fn dimensions(&self) -> Vec2 {
         match self {
             Self::Front { dimensions, .. } => *dimensions,
             Self::Back { dimensions, .. } => *dimensions,
         }
     }
 
-    pub fn set_collision_point(&mut self, point: Vec3) -> Result<(), Error> {
+    pub(crate) fn set_collision_point(&mut self, point: Vec3) -> Result<(), Error> {
         if self.is_updated() {
             return Err(Error::GenericError("panel already updated".to_string()));
         }
@@ -75,7 +75,7 @@ impl StrikezonePanel {
         Ok(())
     }
 
-    pub fn clear(&mut self, new_dimensions: Vec2) {
+    pub(crate) fn clear(&mut self, new_dimensions: Vec2) {
         match self {
             Self::Front {
                 dimensions,
@@ -98,7 +98,7 @@ impl StrikezonePanel {
         }
     }
 
-    pub fn new_back(new_dimensions: Vec2) -> Self {
+    pub(crate) fn new_back(new_dimensions: Vec2) -> Self {
         Self::Back {
             dimensions: new_dimensions,
             collision_point: Vec3::default(),
@@ -106,7 +106,7 @@ impl StrikezonePanel {
         }
     }
 
-    pub fn new_front(new_dimensions: Vec2) -> Self {
+    pub(crate) fn new_front(new_dimensions: Vec2) -> Self {
         Self::Front {
             dimensions: new_dimensions,
             collision_point: Vec3::default(),
