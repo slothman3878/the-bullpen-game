@@ -1,8 +1,7 @@
+use bevy_rapier3d::rapier::prelude::CollisionEventFlags;
+
 use super::resources::BaseballPreviewImage;
 use crate::prelude::*;
-
-// render layer 0 has the scene
-// render layer 1 has the baseball preview
 
 pub(crate) fn _spawn_camera(mut commands: Commands) {
     commands.spawn((
@@ -20,8 +19,22 @@ pub(crate) fn _spawn_camera(mut commands: Commands) {
     ));
 }
 
-pub(crate) fn spawn_strikezone(mut ev_spawn: EventWriter<SpawnStrikezone>) {
-    ev_spawn.send(SpawnStrikezone { batter_height: 1.8 });
+#[derive(Debug, Component, Reflect)]
+#[reflect(Component)]
+pub(crate) struct StrikezoneSpawnRequestMarker;
+
+pub(crate) fn spawn_strikezone(
+    mut commands: Commands,
+    query_strikezone_spawn_request_marker: Query<Entity, With<StrikezoneSpawnRequestMarker>>,
+    mut ev_spawn: EventWriter<SpawnStrikezone>,
+) {
+    for entity in query_strikezone_spawn_request_marker.iter() {
+        commands
+            .entity(entity)
+            .remove::<StrikezoneSpawnRequestMarker>();
+        info!("hello");
+        ev_spawn.send(SpawnStrikezone { batter_height: 1.8 });
+    }
 }
 
 pub(crate) fn third_person_camera_lock_status(
@@ -72,28 +85,7 @@ pub(crate) fn setup_baseball_preview_scene(
     egui_user_textures.add_image(image_handle.clone());
     commands.insert_resource(BaseballPreviewImage::new(image_handle.clone()));
 
-    // // spawn preview baseball
-    // for some reason the render layers here are completely ignored
-    // for now, just hiding it somewhere fairly far away
-
-    // let seam_y_angle = selected_pitch_parameters.0.seam_y_angle;
-    // let seam_z_angle = selected_pitch_parameters.0.seam_z_angle;
-
     let render_layer = RenderLayers::from_layers(&[0]);
-
-    // let rot = Quat::from_rotation_y(-seam_y_angle).mul_quat(Quat::from_rotation_z(seam_z_angle));
-    // commands.spawn((
-    //     BlueprintInfo::from_path("blueprints/Baseball.glb"),
-    //     SpawnBlueprint,
-    //     HideUntilReady,
-    //     TransformBundle::from_transform(
-    //         Transform::from_scale(1. * Vec3::new(1., 1.0, 1.0))
-    //             .with_translation(Vec3::new(0., 0., 1.))
-    //             .with_rotation(rot),
-    //     ),
-    //     PreviewPassBaseballMarker,
-    //     render_layer.clone(),
-    // ));
 
     if let Ok(mut transform) = query_baseball_preview.get_single_mut() {
         let seam_y_angle = selected_pitch_parameters.0.seam_y_angle;
@@ -103,8 +95,6 @@ pub(crate) fn setup_baseball_preview_scene(
         *transform = transform.with_rotation(rot);
     }
 
-    // The same light is reused for both passes,
-    // you can specify different lights for preview and main pass by setting appropriate RenderLayers.
     commands.spawn((
         PointLightBundle {
             transform: Transform::from_translation(Vec3::new(0.0, -10., 15.0)),
@@ -117,7 +107,6 @@ pub(crate) fn setup_baseball_preview_scene(
     commands.spawn((
         Camera3dBundle {
             projection: OrthographicProjection {
-                // 6 world units per window height.
                 scaling_mode: ScalingMode::FixedVertical(3.0),
                 ..default()
             }
@@ -191,6 +180,7 @@ pub(crate) fn spawn_ball(
                 //
                 InheritedVisibility::VISIBLE,
                 RenderLayers::from_layers(&[0]),
+                Ccd::enabled(),
             ))
             .with_children(|child| {
                 let seam_y_angle = selected_pitch_parameters.0.seam_y_angle;
@@ -280,5 +270,38 @@ pub(crate) fn launch_ball(
             seam_y_angle,
             seam_z_angle,
         });
+    }
+}
+
+pub(crate) fn display_strikezone_panel_intersection_info(
+    query_strikezone_panel: Query<Entity, With<StrikezonePanel>>,
+    query_baseball_transform: Query<&Transform, With<BaseballMarker>>,
+    mut collision_events: EventReader<CollisionEvent>,
+) {
+    for collision_event in collision_events.read() {
+        for entity in query_strikezone_panel.iter() {
+            match collision_event {
+                // CollisionEvent::Started(collider1, collider2, _) => {}
+                CollisionEvent::Stopped(collider1, collider2, event_flag) => {
+                    if *event_flag == CollisionEventFlags::SENSOR {
+                        let baseball_entity = if collider1.eq(&entity) {
+                            Some(collider2)
+                        } else if collider2.eq(&entity) {
+                            Some(collider1)
+                        } else {
+                            None
+                        };
+                        if let Some(baseball_entity) = baseball_entity {
+                            if let Ok(baseball_transform) =
+                                query_baseball_transform.get(*baseball_entity)
+                            {
+                                println!("Baseball transform: {:?}", baseball_transform);
+                            }
+                        }
+                    }
+                }
+                _ => {}
+            }
+        }
     }
 }

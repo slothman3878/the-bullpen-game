@@ -1,3 +1,5 @@
+use bevy_rapier3d::rapier::prelude::CollisionEventFlags;
+
 use crate::prelude::*;
 
 pub(crate) fn spawn_strikezone_system(

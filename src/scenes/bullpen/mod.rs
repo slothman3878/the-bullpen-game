@@ -34,7 +34,8 @@ impl GameScene for BullpenScene {
 
     fn register_type(&self, app: &mut App) {
         app.register_type::<GameSceneMarker<Self>>()
-            .register_type::<PreviewPassBaseballMarker>();
+            .register_type::<PreviewPassBaseballMarker>()
+            .register_type::<StrikezoneSpawnRequestMarker>();
     }
 }
 
@@ -116,6 +117,10 @@ impl Plugin for BullpenScene {
                 .run_if(input_just_released(KeyCode::KeyR))
                 .in_set(AeroActivationSet::PostActivation))
             .in_set(GameScenesSet::UpdateSet(*self)),
+        )
+        .add_systems(
+            Update,
+            display_strikezone_panel_intersection_info.in_set(GameScenesSet::UpdateSet(*self)),
         );
     }
 }

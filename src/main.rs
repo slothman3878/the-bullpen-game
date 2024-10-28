@@ -49,7 +49,12 @@ fn main() {
         substeps: 100,
         time_scale: 1.,
     };
+
+    // let mut rapier_context = RapierContext::default();
+    // rapier_context.integration_parameters.max_ccd_substeps = 100;
+
     app.add_plugins(RapierPhysicsPlugin::<NoUserData>::default().with_default_system_setup(true))
+        // .insert_resource(rapier_context)
         .insert_resource(rapier_config);
 
     #[cfg(debug_assertions)]
@@ -57,6 +62,8 @@ fn main() {
         app.add_plugins(LogDiagnosticsPlugin::default())
             .add_plugins(RapierDebugRenderPlugin::default())
             .add_plugins(WorldInspectorPlugin::new());
+
+        app.add_systems(Update, display_events);
     }
 
     app.add_plugins((BlenvyPlugin::default(), BlenvyExtensions));
@@ -72,4 +79,10 @@ fn main() {
     app.add_plugins(GameScenePlugin);
 
     app.run();
+}
+
+fn display_events(mut collision_events: EventReader<CollisionEvent>) {
+    for collision_event in collision_events.read() {
+        println!("Received collision event: {:?}", collision_event);
+    }
 }

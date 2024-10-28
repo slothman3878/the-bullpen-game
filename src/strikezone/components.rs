@@ -66,6 +66,8 @@ pub(crate) struct StrikezonePanelBundle {
     pub panel: StrikezonePanel,
     pub collider: Collider,
     pub transform: TransformBundle,
+    pub active_events: ActiveEvents,
+    // pub rigidbody: RigidBody,
 }
 impl StrikezonePanelBundle {
     pub fn new_front(half_height: f32, pos_y: f32) -> Self {
@@ -78,8 +80,10 @@ impl StrikezonePanelBundle {
         Self {
             sensor: Sensor,
             panel: StrikezonePanel::new_front(),
-            collider: Collider::cuboid(DEFAULT_LENGTH_HALF, half_height, 0.0005),
+            collider: Collider::cuboid(DEFAULT_LENGTH_HALF, half_height, 0.001),
             transform: TransformBundle::from_transform(Transform::from_translation(pos)),
+            active_events: ActiveEvents::COLLISION_EVENTS,
+            // rigidbody: RigidBody::Fixed,
         }
     }
 
@@ -93,8 +97,10 @@ impl StrikezonePanelBundle {
         Self {
             sensor: Sensor,
             panel: StrikezonePanel::new_back(),
-            collider: Collider::cuboid(DEFAULT_LENGTH_HALF, half_height, 0.0005),
+            collider: Collider::cuboid(DEFAULT_LENGTH_HALF, half_height, 0.001),
             transform: TransformBundle::from_transform(Transform::from_translation(pos)),
+            active_events: ActiveEvents::COLLISION_EVENTS,
+            // rigidbody: RigidBody::Fixed,
         }
     }
 }

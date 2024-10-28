@@ -15297,6 +15297,17 @@
       "type": "object",
       "typeInfo": "Struct"
     },
+    "the_bullpen_game::scenes::bullpen::systems::StrikezoneSpawnRequestMarker": {
+      "additionalProperties": false,
+      "isComponent": true,
+      "isResource": false,
+      "long_name": "the_bullpen_game::scenes::bullpen::systems::StrikezoneSpawnRequestMarker",
+      "properties": {},
+      "required": [],
+      "short_name": "StrikezoneSpawnRequestMarker",
+      "type": "object",
+      "typeInfo": "Struct"
+    },
     "the_bullpen_game::scenes::test::TestScene": {
       "additionalProperties": false,
       "isComponent": false,
