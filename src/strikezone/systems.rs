@@ -28,13 +28,19 @@ pub(crate) fn spawn_strikezone_system(
 
 // honestly there is only one strikezone panel
 pub(crate) fn update_strikezone_panel_system(
-    mut query: Query<(&mut Transform, &mut Collider, &mut StrikezonePanel)>,
+    mut commands: Commands,
+    query_collision_record: Query<Entity, With<BallStrikezoneCollisionMarker>>,
+    mut query_strikezone: Query<(&mut Transform, &mut Collider, &mut StrikezonePanel)>,
     mut ev_redraw: EventReader<RedrawStrikezone>,
 ) {
     for ev in ev_redraw.read() {
         let batter_height = ev.batter_height;
-        for (mut transform, mut collider, mut panel) in query.iter_mut() {
+        for (mut transform, mut collider, mut panel) in query_strikezone.iter_mut() {
             panel.clear();
+            // clear collision records
+            for record_entity in query_collision_record.iter() {
+                commands.entity(record_entity).despawn_recursive();
+            }
             //
             let half_height = (DEFAULT_HEIGHT_TOP_PERCENTAGE - DEFAULT_HEIGHT_BOTTOM_PERCENTAGE)
                 * 0.5
@@ -56,34 +62,42 @@ pub(crate) fn update_strikezone_panel_system(
     }
 }
 
-// pub(crate) fn draw_strikezone_squares()
+pub(crate) fn record_strikezone_collision_system(
+    mut commands: Commands,
+    mut ev_record: EventReader<RecordStrikezoneCollision>,
+    mut query_strikezone: Query<(&mut StrikezonePanel, &GlobalTransform)>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+) {
+    for ev in ev_record.read() {
+        if let Ok((mut panel, global_transform)) = query_strikezone.get_mut(ev.panel) {
+            if let Ok(_) = panel.set_collision_point(ev.collision_point) {
+                info!("collision point updated");
+                // unfortunately, the z pos of the records is not the correct z pos at collision
+                // not sure how to make this work
+                commands
+                    .spawn((
+                        BallStrikezoneCollisionMarker,
+                        InheritedVisibility::VISIBLE,
+                        TransformBundle::from(Transform::from_translation(vec3(
+                            ev.collision_point.x,
+                            ev.collision_point.y,
+                            global_transform.translation().z,
+                        ))),
+                    ))
+                    .with_children(|parent| {
+                        let color = match *panel {
+                            StrikezonePanel::Front(_, _) => Color::srgba(0.1, 0.1, 0.9, 0.7),
+                            StrikezonePanel::Back(_, _) => Color::srgba(0.9, 0.4, 0.1, 0.7),
+                        };
 
-fn _spawn_front_panel(children: &mut ChildBuilder, half_height: f32, pos_y: f32) {
-    let pos = Vec3::new(
-        0.,
-        pos_y, //
-        DEFAULT_FRONT_PANEL_POS_Z,
-    );
-
-    children.spawn((
-        Sensor,
-        Collider::cuboid(DEFAULT_LENGTH_HALF, half_height, 0.0005),
-        StrikezonePanel::new_front(),
-        TransformBundle::from_transform(Transform::from_translation(pos)),
-    ));
-}
-
-fn _spawn_back_panel(children: &mut ChildBuilder, half_height: f32, pos_y: f32) {
-    let pos = Vec3::new(
-        0.,
-        pos_y - DEFAULT_BACK_PANEL_Y_DIFF,
-        DEFAULT_BACK_PANEL_POS_Z,
-    );
-
-    children.spawn((
-        Sensor,
-        Collider::cuboid(DEFAULT_LENGTH_HALF, half_height, 0.0005),
-        StrikezonePanel::new_back(),
-        TransformBundle::from_transform(Transform::from_translation(pos)),
-    ));
+                        parent.spawn(PbrBundle {
+                            mesh: meshes.add(Sphere::new(0.03)).into(), // default 0.075
+                            material: materials.add(color),
+                            ..default()
+                        });
+                    });
+            }
+        }
+    }
 }

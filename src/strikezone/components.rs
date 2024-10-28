@@ -7,10 +7,15 @@ pub(crate) struct StrikezoneHomeplateMarker;
 
 #[derive(Debug, Component, Reflect)]
 #[reflect(Component)]
+pub(crate) struct BallStrikezoneCollisionMarker;
+
+#[derive(Debug, Component, Reflect)]
+#[reflect(Component)]
 pub(crate) enum StrikezonePanel {
     Front(Vec3, bool),
     Back(Vec3, bool),
 }
+
 impl StrikezonePanel {
     pub fn is_updated(&self) -> bool {
         match self {
@@ -26,7 +31,10 @@ impl StrikezonePanel {
         }
     }
 
-    pub fn set_collision_point(&mut self, point: Vec3) {
+    pub fn set_collision_point(&mut self, point: Vec3) -> Result<(), Error> {
+        if self.is_updated() {
+            return Err(Error::GenericError("panel already updated".to_string()));
+        }
         match self {
             Self::Front(ref mut front, ref mut updated) => {
                 *front = point;
@@ -37,6 +45,7 @@ impl StrikezonePanel {
                 *updated = true;
             }
         }
+        Ok(())
     }
 
     pub fn clear(&mut self) {

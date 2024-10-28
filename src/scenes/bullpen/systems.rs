@@ -146,9 +146,14 @@ pub(crate) struct BaseballMarker;
 pub(crate) fn despawn_ball(
     mut commands: Commands,
     query_baseball: Query<Entity, With<BaseballMarker>>,
+    active_batter_tracker: Res<ActiveBatterTracker>,
+    mut ev_redraw: EventWriter<RedrawStrikezone>,
 ) {
     for baseball in query_baseball.iter() {
         commands.entity(baseball).despawn_recursive();
+        ev_redraw.send(RedrawStrikezone {
+            batter_height: active_batter_tracker.height,
+        });
     }
 }
 
@@ -280,6 +285,7 @@ pub(crate) fn display_strikezone_panel_intersection_info(
     query_strikezone_panel: Query<Entity, With<StrikezonePanel>>,
     query_baseball_transform: Query<&Transform, With<BaseballMarker>>,
     mut collision_events: EventReader<CollisionEvent>,
+    mut ev_record: EventWriter<RecordStrikezoneCollision>,
 ) {
     for collision_event in collision_events.read() {
         for entity in query_strikezone_panel.iter() {
@@ -298,7 +304,10 @@ pub(crate) fn display_strikezone_panel_intersection_info(
                             if let Ok(baseball_transform) =
                                 query_baseball_transform.get(*baseball_entity)
                             {
-                                println!("Baseball transform: {:?}", baseball_transform);
+                                ev_record.send(RecordStrikezoneCollision {
+                                    panel: entity,
+                                    collision_point: baseball_transform.translation,
+                                });
                             }
                         }
                     }

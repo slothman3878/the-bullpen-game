@@ -34,11 +34,16 @@ impl<T: GameScene> Plugin for StrikezonePlugin<T> {
         app.register_type::<StrikezoneHomeplateMarker>();
 
         app.add_event::<SpawnStrikezone>()
-            .add_event::<RedrawStrikezone>();
+            .add_event::<RedrawStrikezone>()
+            .add_event::<RecordStrikezoneCollision>();
 
         app.add_systems(
             Update,
-            (spawn_strikezone_system, update_strikezone_panel_system)
+            (
+                spawn_strikezone_system,
+                update_strikezone_panel_system,
+                record_strikezone_collision_system,
+            )
                 .in_set(GameScenesSet::UpdateSet(self.scene.clone())),
         );
     }
