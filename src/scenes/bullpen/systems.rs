@@ -25,15 +25,18 @@ pub(crate) struct StrikezoneSpawnRequestMarker;
 
 pub(crate) fn spawn_strikezone(
     mut commands: Commands,
+    active_batter_tracker: Res<ActiveBatterTracker>,
     query_strikezone_spawn_request_marker: Query<Entity, With<StrikezoneSpawnRequestMarker>>,
     mut ev_spawn: EventWriter<SpawnStrikezone>,
 ) {
     for entity in query_strikezone_spawn_request_marker.iter() {
+        info!("strikezone spawn request marker found");
         commands
             .entity(entity)
             .remove::<StrikezoneSpawnRequestMarker>();
-        info!("hello");
-        ev_spawn.send(SpawnStrikezone { batter_height: 1.8 });
+        ev_spawn.send(SpawnStrikezone {
+            batter_height: active_batter_tracker.height,
+        });
     }
 }
 

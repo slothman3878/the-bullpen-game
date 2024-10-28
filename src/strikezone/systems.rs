@@ -1,10 +1,8 @@
-use bevy_rapier3d::rapier::prelude::CollisionEventFlags;
-
 use crate::prelude::*;
 
 pub(crate) fn spawn_strikezone_system(
     mut commands: Commands,
-    mut ev_spawn: EventReader<RedrawStrikezone>,
+    mut ev_spawn: EventReader<SpawnStrikezone>,
     query: Query<(Entity, &Transform), With<StrikezoneHomeplateMarker>>,
 ) {
     for ev in ev_spawn.read() {

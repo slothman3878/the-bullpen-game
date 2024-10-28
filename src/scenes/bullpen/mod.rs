@@ -93,7 +93,6 @@ impl Plugin for BullpenScene {
         .add_systems(
             Update,
             spawn_strikezone
-                .run_if(input_just_pressed(KeyCode::KeyQ))
                 .in_set(GameScenesSet::UpdateSet(*self))
                 .in_set(GltfBlueprintsSet::AfterSpawn),
         )

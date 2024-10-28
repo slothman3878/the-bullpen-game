@@ -69,7 +69,7 @@ pub(crate) fn params_menu(
                                         ui.label("batter height (cm)");
                                         egui::Slider::new(
                                             &mut batter_height,
-                                            150.0_f32..=200.0_f32,
+                                            150.0_f32..=240.0_f32,
                                         )
                                         .ui(ui);
                                         ui.end_row();
