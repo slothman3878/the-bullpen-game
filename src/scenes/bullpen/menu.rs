@@ -13,6 +13,7 @@ pub(crate) enum MenuTab {
 pub(crate) struct MenuState {
     pub visibility: bool,
     pub selected_tab: MenuTab,
+    pub metric: bool,
 }
 
 pub(crate) fn menu_visibility_is(visibility: bool) -> impl FnMut(Res<MenuState>) -> bool + Clone {
@@ -66,19 +67,42 @@ pub(crate) fn params_menu(
                                     ui,
                                     |ui| {
                                         // in cm
-                                        let mut batter_height = active_batter_tracker.height * 100.;
-                                        ui.label("batter height (cm)");
+                                        let mut batter_height = if menu_state.metric {
+                                            active_batter_tracker.height * 100.
+                                        } else {
+                                            active_batter_tracker.height * M_TO_FEET
+                                        };
+                                        ui.label(if menu_state.metric {
+                                            "batter height (cm)"
+                                        } else {
+                                            "batter height (ft)"
+                                        });
                                         egui::Slider::new(
                                             &mut batter_height,
-                                            140.0_f32..=210.0_f32,
+                                            if menu_state.metric {
+                                                140.0_f32..=210.0_f32
+                                            } else {
+                                                4.6_f32..=7.0_f32
+                                            },
                                         )
                                         .ui(ui);
                                         ui.end_row();
-                                        if (batter_height / 100. - active_batter_tracker.height)
-                                            .abs()
-                                            >= 0.01
-                                        {
-                                            active_batter_tracker.height = batter_height / 100.;
+                                        if menu_state.metric {
+                                            if (batter_height / 100. - active_batter_tracker.height)
+                                                .abs()
+                                                >= 0.01
+                                            {
+                                                active_batter_tracker.height = batter_height / 100.;
+                                            }
+                                        } else {
+                                            if (batter_height / M_TO_FEET
+                                                - active_batter_tracker.height)
+                                                .abs()
+                                                >= 0.01
+                                            {
+                                                active_batter_tracker.height =
+                                                    batter_height / M_TO_FEET;
+                                            }
                                         }
 
                                         ui.label("Pitching Arm");
@@ -99,12 +123,28 @@ pub(crate) fn params_menu(
                                         );
                                         ui.end_row();
 
-                                        ui.label("speed (mph)");
-                                        egui::Slider::new(
-                                            &mut selected_pitch_parameters.0.speed,
-                                            30.0_f32..=110.0_f32,
-                                        )
-                                        .ui(ui);
+                                        ui.label(if menu_state.metric {
+                                            "speed (km/h)"
+                                        } else {
+                                            "speed (mph)"
+                                        });
+                                        if menu_state.metric {
+                                            let mut selected_speed =
+                                                selected_pitch_parameters.0.speed / KMH_TO_MPH;
+                                            egui::Slider::new(
+                                                &mut selected_speed,
+                                                50.0_f32..=180.0_f32,
+                                            )
+                                            .ui(ui);
+                                            selected_pitch_parameters.0.speed =
+                                                selected_speed * KMH_TO_MPH;
+                                        } else {
+                                            egui::Slider::new(
+                                                &mut selected_pitch_parameters.0.speed,
+                                                30.0_f32..=110.0_f32,
+                                            )
+                                            .ui(ui);
+                                        }
                                         ui.end_row();
 
                                         ui.label("spin (rpm)");
@@ -271,9 +311,22 @@ pub(crate) fn params_menu(
                     }
                     MenuTab::Settings => {
                         ui.add_space(20.0);
-                        if ui.button("Exit Game").clicked() {
-                            exit.send(AppExit::Success);
-                        }
+                        egui::Grid::new("parameters")
+                            .spacing([20.0, 20.0])
+                            .show(ui, |ui| {
+                                ui.add_space(10.0);
+                                if ui
+                                    .add(egui::RadioButton::new(menu_state.metric, "metric"))
+                                    .clicked()
+                                {
+                                    menu_state.metric = !menu_state.metric;
+                                };
+                                ui.end_row();
+                                //
+                                if ui.button("Exit Game").clicked() {
+                                    exit.send(AppExit::Success);
+                                }
+                            });
                     }
                 }
 
