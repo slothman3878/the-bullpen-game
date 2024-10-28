@@ -2,6 +2,7 @@ mod materials;
 mod pitcher;
 mod prelude;
 mod scenes;
+mod strikezone;
 
 use crate::prelude::*;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;

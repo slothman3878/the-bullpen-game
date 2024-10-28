@@ -15308,6 +15308,17 @@
       "type": "object",
       "typeInfo": "Struct"
     },
+    "the_bullpen_game::strikezone::components::StrikezoneHomeplateMarker": {
+      "additionalProperties": false,
+      "isComponent": true,
+      "isResource": false,
+      "long_name": "the_bullpen_game::strikezone::components::StrikezoneHomeplateMarker",
+      "properties": {},
+      "required": [],
+      "short_name": "StrikezoneHomeplateMarker",
+      "type": "object",
+      "typeInfo": "Struct"
+    },
     "u128": {
       "isComponent": false,
       "isResource": false,

@@ -29,3 +29,4 @@ pub(crate) use bevy_flycam::{FlyCam, NoCameraPlayerPlugin};
 pub(crate) use crate::materials::prelude::*;
 pub(crate) use crate::pitcher::prelude::*;
 pub(crate) use crate::scenes::prelude::*;
+pub(crate) use crate::strikezone::prelude::*;

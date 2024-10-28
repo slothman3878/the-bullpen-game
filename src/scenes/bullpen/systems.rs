@@ -20,6 +20,10 @@ pub(crate) fn _spawn_camera(mut commands: Commands) {
     ));
 }
 
+pub(crate) fn spawn_strikezone(mut ev_spawn: EventWriter<SpawnStrikezone>) {
+    ev_spawn.send(SpawnStrikezone { batter_height: 1.8 });
+}
+
 pub(crate) fn third_person_camera_lock_status(
     query_third_person_camera: Query<&ThirdPersonCamera, With<PitcherCameraMarker>>,
 ) {

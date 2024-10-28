@@ -46,7 +46,8 @@ impl Plugin for BullpenScene {
         app.add_plugins(PitcherPlugin::<BullpenScene> {
             scene: *self,
             render_layers: vec![0],
-        });
+        })
+        .add_plugins(StrikezonePlugin::<BullpenScene> { scene: *self });
 
         app.insert_resource(MenuState::default());
 
@@ -54,8 +55,10 @@ impl Plugin for BullpenScene {
             OnEnter(Self),
             (
                 setup_scene,
-                setup_baseball_preview_scene, // spawn_camera.after(setup_scene),
+                setup_baseball_preview_scene, //
+                                              // _spawn_camera.after(setup_scene),
             )
+                .chain()
                 .in_set(GameScenesSet::OnEnterSet(*self)),
         )
         .add_systems(
@@ -72,6 +75,13 @@ impl Plugin for BullpenScene {
             )
                 .chain()
                 .in_set(GameScenesSet::UpdateSet(*self)),
+        )
+        .add_systems(
+            Update,
+            spawn_strikezone
+                .run_if(input_just_pressed(KeyCode::KeyQ))
+                .in_set(GameScenesSet::UpdateSet(*self))
+                .in_set(GltfBlueprintsSet::AfterSpawn),
         )
         .add_systems(
             Update,
