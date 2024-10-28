@@ -2,10 +2,11 @@ use crate::prelude::*;
 use std::f32::consts::PI;
 
 #[derive(PartialEq, Debug, Default)]
-enum MenuTab {
+pub(crate) enum MenuTab {
     #[default]
     Parameters,
     Controls,
+    Settings,
 }
 
 #[derive(Debug, Resource, Default)]
@@ -27,6 +28,7 @@ pub(crate) fn params_menu(
     mut selected_pitch_parameters: ResMut<SelectedPitchParameters>,
     baseball_preview_image: Res<BaseballPreviewImage>,
     mut menu_state: ResMut<MenuState>,
+    mut exit: EventWriter<AppExit>,
 ) {
     let opt_cube_preview_texture_id = contexts.image_id(&baseball_preview_image);
 
@@ -44,6 +46,7 @@ pub(crate) fn params_menu(
                     "Parameters",
                 );
                 ui.selectable_value(&mut menu_state.selected_tab, MenuTab::Controls, "Controls");
+                ui.selectable_value(&mut menu_state.selected_tab, MenuTab::Settings, "Settings");
             });
         });
 
@@ -60,6 +63,7 @@ pub(crate) fn params_menu(
                                 egui::Grid::new("parameters").spacing([50.0, 50.0]).show(
                                     ui,
                                     |ui| {
+                                        ui.label("Pitching Arm");
                                         ui.with_layout(
                                             egui::Layout::left_to_right(egui::Align::TOP),
                                             |ui| {
@@ -242,9 +246,15 @@ pub(crate) fn params_menu(
                             ui.add_space(10.0);
 
                             ui.label("• Aim with mouse");
-                            ui.label("• Right click to aim, release to launch");
+                            ui.label("• Right Mouse Button to aim, then release to launch");
                             ui.label("• Press R to reset ball");
                         });
+                    }
+                    MenuTab::Settings => {
+                        ui.add_space(20.0);
+                        if ui.button("Exit Game").clicked() {
+                            exit.send(AppExit::Success);
+                        }
                     }
                 }
 
