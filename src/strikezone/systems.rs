@@ -36,11 +36,6 @@ pub(crate) fn update_strikezone_panel_system(
     for ev in ev_redraw.read() {
         let batter_height = ev.batter_height;
         for (mut transform, mut collider, mut panel) in query_strikezone.iter_mut() {
-            panel.clear();
-            // clear collision records
-            for record_entity in query_collision_record.iter() {
-                commands.entity(record_entity).despawn_recursive();
-            }
             //
             let half_height = (DEFAULT_HEIGHT_TOP_PERCENTAGE - DEFAULT_HEIGHT_BOTTOM_PERCENTAGE)
                 * 0.5
@@ -48,11 +43,16 @@ pub(crate) fn update_strikezone_panel_system(
             let pos_y = (DEFAULT_HEIGHT_TOP_PERCENTAGE + DEFAULT_HEIGHT_BOTTOM_PERCENTAGE)
                 * 0.5
                 * batter_height;
+            panel.clear(Vec2::new(DEFAULT_LENGTH_HALF, half_height));
+            // clear collision records
+            for record_entity in query_collision_record.iter() {
+                commands.entity(record_entity).despawn_recursive();
+            }
             let new_bundle = match *panel {
-                StrikezonePanel::Front(_, _) => {
+                StrikezonePanel::Front { .. } => {
                     StrikezonePanelBundle::new_front(half_height, pos_y)
                 }
-                StrikezonePanel::Back(_, _) => {
+                StrikezonePanel::Back { .. } => {
                     StrikezonePanelBundle::new_back(half_height, pos_y) //
                 }
             };
@@ -87,8 +87,8 @@ pub(crate) fn record_strikezone_collision_system(
                     ))
                     .with_children(|parent| {
                         let color = match *panel {
-                            StrikezonePanel::Front(_, _) => Color::srgba(0.1, 0.1, 0.9, 0.7),
-                            StrikezonePanel::Back(_, _) => Color::srgba(0.9, 0.4, 0.1, 0.7),
+                            StrikezonePanel::Front { .. } => Color::srgba(0.1, 0.1, 0.9, 0.7),
+                            StrikezonePanel::Back { .. } => Color::srgba(0.9, 0.4, 0.1, 0.7),
                         };
 
                         parent.spawn(PbrBundle {
@@ -97,6 +97,32 @@ pub(crate) fn record_strikezone_collision_system(
                             ..default()
                         });
                     });
+            }
+        }
+    }
+}
+
+pub(crate) fn draw_panels(
+    mut gizmos: Gizmos,
+    query_strikezone: Query<(&Transform, &StrikezonePanel)>,
+) {
+    for (transform, panel) in query_strikezone.iter() {
+        match panel {
+            StrikezonePanel::Front { dimensions, .. } => {
+                gizmos.rect(
+                    transform.translation,
+                    transform.rotation,
+                    *dimensions * 2.,
+                    Color::srgba(0.1, 0.1, 0.9, 1.),
+                );
+            }
+            StrikezonePanel::Back { dimensions, .. } => {
+                gizmos.rect(
+                    transform.translation,
+                    transform.rotation,
+                    *dimensions * 2.,
+                    Color::srgba(0.9, 0.4, 0.9, 1.),
+                );
             }
         }
     }

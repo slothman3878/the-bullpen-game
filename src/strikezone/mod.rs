@@ -43,6 +43,7 @@ impl<T: GameScene> Plugin for StrikezonePlugin<T> {
                 spawn_strikezone_system,
                 update_strikezone_panel_system,
                 record_strikezone_collision_system,
+                draw_panels,
             )
                 .in_set(GameScenesSet::UpdateSet(self.scene.clone())),
         );

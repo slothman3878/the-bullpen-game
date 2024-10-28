@@ -12,22 +12,41 @@ pub(crate) struct BallStrikezoneCollisionMarker;
 #[derive(Debug, Component, Reflect)]
 #[reflect(Component)]
 pub(crate) enum StrikezonePanel {
-    Front(Vec3, bool),
-    Back(Vec3, bool),
+    Front {
+        dimensions: Vec2,
+        collision_point: Vec3,
+        updated: bool,
+    },
+    Back {
+        dimensions: Vec2,
+        collision_point: Vec3,
+        updated: bool,
+    },
 }
 
 impl StrikezonePanel {
     pub fn is_updated(&self) -> bool {
         match self {
-            Self::Front(_, ref updated) => *updated,
-            Self::Back(_, ref updated) => *updated,
+            Self::Front { updated, .. } => *updated,
+            Self::Back { updated, .. } => *updated,
         }
     }
 
     pub fn collision_point(&self) -> Vec3 {
         match self {
-            Self::Front(ref point, _) => *point,
-            Self::Back(ref point, _) => *point,
+            Self::Front {
+                collision_point, ..
+            } => *collision_point,
+            Self::Back {
+                collision_point, ..
+            } => *collision_point,
+        }
+    }
+
+    pub fn dimensions(&self) -> Vec2 {
+        match self {
+            Self::Front { dimensions, .. } => *dimensions,
+            Self::Back { dimensions, .. } => *dimensions,
         }
     }
 
@@ -36,36 +55,63 @@ impl StrikezonePanel {
             return Err(Error::GenericError("panel already updated".to_string()));
         }
         match self {
-            Self::Front(ref mut front, ref mut updated) => {
-                *front = point;
+            Self::Front {
+                collision_point,
+                updated,
+                ..
+            } => {
+                *collision_point = point;
                 *updated = true;
             }
-            Self::Back(ref mut back, ref mut updated) => {
-                *back = point;
+            Self::Back {
+                collision_point,
+                updated,
+                ..
+            } => {
+                *collision_point = point;
                 *updated = true;
             }
         }
         Ok(())
     }
 
-    pub fn clear(&mut self) {
+    pub fn clear(&mut self, new_dimensions: Vec2) {
         match self {
-            Self::Front(ref mut front, ref mut updated) => {
-                *front = Vec3::default();
+            Self::Front {
+                dimensions,
+                collision_point,
+                updated,
+            } => {
+                *dimensions = new_dimensions;
+                *collision_point = Vec3::default();
                 *updated = false;
             }
-            Self::Back(ref mut back, ref mut updated) => {
-                *back = Vec3::default();
+            Self::Back {
+                dimensions,
+                collision_point,
+                updated,
+            } => {
+                *dimensions = new_dimensions;
+                *collision_point = Vec3::default();
                 *updated = false;
             }
         }
     }
 
-    pub fn new_back() -> Self {
-        Self::Back(Vec3::default(), false)
+    pub fn new_back(new_dimensions: Vec2) -> Self {
+        Self::Back {
+            dimensions: new_dimensions,
+            collision_point: Vec3::default(),
+            updated: false,
+        }
     }
-    pub fn new_front() -> Self {
-        Self::Front(Vec3::default(), false)
+
+    pub fn new_front(new_dimensions: Vec2) -> Self {
+        Self::Front {
+            dimensions: new_dimensions,
+            collision_point: Vec3::default(),
+            updated: false,
+        }
     }
 }
 
@@ -88,7 +134,7 @@ impl StrikezonePanelBundle {
 
         Self {
             sensor: Sensor,
-            panel: StrikezonePanel::new_front(),
+            panel: StrikezonePanel::new_front(Vec2::new(DEFAULT_LENGTH_HALF, half_height)),
             collider: Collider::cuboid(DEFAULT_LENGTH_HALF, half_height, 0.001),
             transform: TransformBundle::from_transform(Transform::from_translation(pos)),
             active_events: ActiveEvents::COLLISION_EVENTS,
@@ -105,7 +151,7 @@ impl StrikezonePanelBundle {
 
         Self {
             sensor: Sensor,
-            panel: StrikezonePanel::new_back(),
+            panel: StrikezonePanel::new_back(Vec2::new(DEFAULT_LENGTH_HALF, half_height)),
             collider: Collider::cuboid(DEFAULT_LENGTH_HALF, half_height, 0.001),
             transform: TransformBundle::from_transform(Transform::from_translation(pos)),
             active_events: ActiveEvents::COLLISION_EVENTS,
