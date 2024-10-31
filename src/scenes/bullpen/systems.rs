@@ -19,6 +19,27 @@ pub(crate) fn _spawn_camera(mut commands: Commands) {
     ));
 }
 
+pub(crate) fn swap_camera(
+    mut pitcher_camera_camera: Query<&mut ThirdPersonCamera, With<PitcherCameraMarker>>,
+    mut camera_query: Query<
+        &mut Camera,
+        Or<(
+            // With<FlyCamMarker>,
+            With<PitcherCameraMarker>,
+            With<BatterCameraMarker>,
+        )>,
+    >,
+) {
+    for mut camera in pitcher_camera_camera.iter_mut() {
+        camera.cursor_lock_active = !camera.cursor_lock_active;
+        camera.cursor_lock_toggle_enabled = !camera.cursor_lock_toggle_enabled;
+    }
+    //
+    for mut camera in camera_query.iter_mut() {
+        camera.is_active = !camera.is_active;
+    }
+}
+
 #[derive(Debug, Component, Reflect)]
 #[reflect(Component)]
 pub(crate) struct StrikezoneSpawnRequestMarker;
@@ -253,21 +274,6 @@ pub(crate) fn launch_ball(
             seam_y_angle,
         } = selected_pitch_parameters.0;
 
-        // let fixed_spin_rate = if spin_rate == 0. { 1. } else { spin_rate };
-
-        // let gyro = match gyro_pole {
-        //     GyroPole::Left => spin_efficiency.asin(),
-        //     GyroPole::Right => std::f32::consts::PI - spin_efficiency.asin(),
-        // };
-
-        // let spin_x_0 = fixed_spin_rate * (spin_efficiency * tilt.get().sin());
-        // let spin_y_0 = fixed_spin_rate * gyro.cos(); // ((1. - spin_efficiency.powi(2)).sqrt());
-        // let spin_z_0 = -fixed_spin_rate * (spin_efficiency * tilt.get().cos());
-        // let spin = Vec3::new(
-        //     spin_x_0 * RPM_TO_RADS,
-        //     spin_y_0 * RPM_TO_RADS, // - RPM_TO_RAD ???
-        //     spin_z_0 * RPM_TO_RADS,
-        // );
         let spin =
             get_angular_velocity_from_parameters(tilt, spin_efficiency, spin_rate, gyro_pole);
 

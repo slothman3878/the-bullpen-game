@@ -16,6 +16,7 @@ pub(crate) trait GameScene: States // 'static + Send + Sync + Clone + PartialEq 
 {
     fn register_type(&self, app: &mut App);
     fn configure_set(&self, app: &mut App);
+    fn add_events(&self, app: &mut App);
 }
 
 #[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]

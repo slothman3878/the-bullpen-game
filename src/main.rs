@@ -1,3 +1,4 @@
+mod batter;
 mod errors;
 mod materials;
 mod pitcher;

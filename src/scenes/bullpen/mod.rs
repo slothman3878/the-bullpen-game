@@ -1,14 +1,16 @@
+mod events;
 mod menu;
 mod resources;
 mod systems;
 
-use systems::*;
-
 use crate::prelude::*;
+use events::*;
 use menu::*;
+use systems::*;
 
 pub(crate) mod prelude {
     pub(crate) use super::*;
+    pub(crate) use events::*;
     pub(crate) use resources::*;
 }
 
@@ -38,14 +40,23 @@ impl GameScene for BullpenScene {
             .register_type::<PreviewPassBaseballAxisMarker>()
             .register_type::<StrikezoneSpawnRequestMarker>();
     }
+
+    fn add_events(&self, app: &mut App) {
+        app.add_event::<PlayerModeSelected>();
+    }
 }
 
 impl Plugin for BullpenScene {
     fn build(&self, app: &mut App) {
         self.register_type(app);
+        self.add_events(app);
         self.configure_set(app);
 
         app.add_plugins(PitcherPlugin::<BullpenScene> {
+            scene: *self,
+            render_layers: vec![0],
+        })
+        .add_plugins(BatterPlugin::<BullpenScene> {
             scene: *self,
             render_layers: vec![0],
         })
@@ -122,6 +133,11 @@ impl Plugin for BullpenScene {
             Update,
             display_strikezone_panel_intersection_info
                 .in_set(UpdateBaseballFlightStateSet::PostUpdate)
+                .in_set(GameScenesSet::UpdateSet(*self)),
+        )
+        .add_systems(
+            Update,
+            (swap_camera.run_if(input_just_pressed(KeyCode::KeyQ)))
                 .in_set(GameScenesSet::UpdateSet(*self)),
         );
     }

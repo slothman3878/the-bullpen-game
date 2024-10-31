@@ -281,7 +281,7 @@ pub(crate) fn params_menu(
                                     ui.label("y angle (°)");
                                     let mut seam_y_angle_deg =
                                         selected_pitch_parameters.0.seam_y_angle.to_degrees();
-                                    egui::Slider::new(&mut seam_y_angle_deg, 0.0_f32..=180.).ui(ui);
+                                    egui::Slider::new(&mut seam_y_angle_deg, 0.0_f32..=360.).ui(ui);
                                     ui.end_row();
                                     selected_pitch_parameters.0.seam_y_angle =
                                         seam_y_angle_deg.to_radians();
@@ -289,7 +289,7 @@ pub(crate) fn params_menu(
                                     ui.label("z angle (°)");
                                     let mut seam_z_angle_deg =
                                         selected_pitch_parameters.0.seam_z_angle.to_degrees();
-                                    egui::Slider::new(&mut seam_z_angle_deg, 0.0_f32..=180.).ui(ui);
+                                    egui::Slider::new(&mut seam_z_angle_deg, 0.0_f32..=360.).ui(ui);
                                     ui.end_row();
                                     selected_pitch_parameters.0.seam_z_angle =
                                         seam_z_angle_deg.to_radians();
@@ -314,7 +314,6 @@ pub(crate) fn params_menu(
                         egui::Grid::new("parameters")
                             .spacing([20.0, 20.0])
                             .show(ui, |ui| {
-                                ui.add_space(10.0);
                                 if ui
                                     .add(egui::RadioButton::new(menu_state.metric, "metric"))
                                     .clicked()

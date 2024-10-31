@@ -33,14 +33,17 @@ impl GameScene for TestScene {
     fn register_type(&self, app: &mut App) {
         app.register_type::<GameSceneMarker<Self>>();
     }
+
+    fn add_events(&self, app: &mut App) {
+        app.add_event::<PitchStageTransitionEvents>();
+    }
 }
 
 impl Plugin for TestScene {
     fn build(&self, app: &mut App) {
         self.register_type(app);
         self.configure_set(app);
-
-        app.add_event::<PitchStageTransitionEvents>();
+        self.add_events(app);
 
         app.add_systems(
             OnEnter(Self),

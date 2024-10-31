@@ -15148,6 +15148,17 @@
       "type": "object",
       "typeInfo": "Value"
     },
+    "the_bullpen_game::batter::BatterCameraMarker": {
+      "additionalProperties": false,
+      "isComponent": true,
+      "isResource": false,
+      "long_name": "the_bullpen_game::batter::BatterCameraMarker",
+      "properties": {},
+      "required": [],
+      "short_name": "BatterCameraMarker",
+      "type": "object",
+      "typeInfo": "Struct"
+    },
     "the_bullpen_game::pitcher::components::PitcherCameraMarker": {
       "additionalProperties": false,
       "isComponent": true,
