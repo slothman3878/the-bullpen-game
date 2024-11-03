@@ -7,7 +7,6 @@ mod scenes;
 mod strikezone;
 
 use crate::prelude::*;
-use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_third_person_camera::ThirdPersonCameraPlugin;
 
 const WINDOW_WIDTH: f32 = 1920.0;
@@ -62,8 +61,7 @@ fn main() {
     #[cfg(debug_assertions)]
     {
         app.add_plugins(LogDiagnosticsPlugin::default())
-            .add_plugins(RapierDebugRenderPlugin::default())
-            .add_plugins(WorldInspectorPlugin::new());
+            .add_plugins(RapierDebugRenderPlugin::default());
 
         // app.add_systems(Update, display_events);
     }

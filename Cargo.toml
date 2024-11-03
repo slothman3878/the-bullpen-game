@@ -33,7 +33,6 @@ blenvy = { git = "https://github.com/kaosat-dev/Blenvy/", branch = "blenvy", ver
 blenvy-extensions = { git = "https://github.com/slothman3878/blenvy-extensions/", branch = "main" }
 leafwing-input-manager = "^0.14.0"
 log = "^0.4.22"
-bevy-inspector-egui = "^0.25.1"
 bevy_third_person_camera = "0.1.11"
 # bevy-rapier-baseball-flight = { path = "../../008-bevy-rapier-baseball-flight/bevy-rapier-baseball-flight" }
 # bevy-rapier-baseball-flight = { path = "../016-bevy-rapier-baseball-flight/bevy-rapier-baseball-flight" }
@@ -57,6 +56,3 @@ opt-level = 3
 
 [build]
 rustflags = ["--cfg=web_sys_unstable_apis"]
-
-[target.wasm32-unknown-unknown]
-runner = "wasm-server-runner"
