@@ -39,7 +39,8 @@ log = "^0.4.22"
 bevy-inspector-egui = "^0.25.1"
 bevy_third_person_camera = "0.1.11"
 # bevy-rapier-baseball-flight = { path = "../../008-bevy-rapier-baseball-flight/bevy-rapier-baseball-flight" }
-bevy-rapier-baseball-flight = { path = "../016-bevy-rapier-baseball-flight/bevy-rapier-baseball-flight" } #"0.0.1-alpha.4"
+# bevy-rapier-baseball-flight = { path = "../016-bevy-rapier-baseball-flight/bevy-rapier-baseball-flight" }
+bevy-rapier-baseball-flight = { version = "0.0.1-alpha.5" }
 bevy_rapier3d = "0.27.0"
 bevy_dolly = { version = "0.0.4" }
 bevy_egui = { version = "0.30", default-features = false, features = [
