@@ -52,6 +52,8 @@ impl Plugin for BullpenScene {
         self.add_events(app);
         self.configure_set(app);
 
+        app.init_state::<BullpenSceneGameMode>();
+
         app.add_plugins(PitcherPlugin::<BullpenScene> {
             scene: *self,
             render_layers: vec![0],

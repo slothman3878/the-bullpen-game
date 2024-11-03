@@ -20,8 +20,20 @@ pub(crate) fn menu_visibility_is(visibility: bool) -> impl FnMut(Res<MenuState>)
     move |menu_visibility| menu_visibility.visibility == visibility
 }
 
-pub(crate) fn toggle_menu_visibility(mut menu_visibility: ResMut<MenuState>) {
-    menu_visibility.visibility = !menu_visibility.visibility;
+pub(crate) fn toggle_menu_visibility(
+    mut menu_visibility: ResMut<MenuState>,
+    primary_window: Query<&Window, With<PrimaryWindow>>,
+) {
+    if let Ok(window) = primary_window.get_single() {
+        match window.cursor.grab_mode {
+            CursorGrabMode::None => {
+                menu_visibility.visibility = false;
+            }
+            _ => {
+                menu_visibility.visibility = true;
+            }
+        }
+    }
 }
 
 pub(crate) fn params_menu(
@@ -281,16 +293,28 @@ pub(crate) fn params_menu(
                                     ui.label("y angle (°)");
                                     let mut seam_y_angle_deg =
                                         selected_pitch_parameters.0.seam_y_angle.to_degrees();
+                                    if seam_y_angle_deg < 0. {
+                                        seam_y_angle_deg += 360.;
+                                    }
                                     egui::Slider::new(&mut seam_y_angle_deg, 0.0_f32..=360.).ui(ui);
                                     ui.end_row();
+                                    if seam_y_angle_deg > 180. {
+                                        seam_y_angle_deg -= 360.;
+                                    }
                                     selected_pitch_parameters.0.seam_y_angle =
                                         seam_y_angle_deg.to_radians();
 
                                     ui.label("z angle (°)");
                                     let mut seam_z_angle_deg =
                                         selected_pitch_parameters.0.seam_z_angle.to_degrees();
+                                    if seam_z_angle_deg < 0. {
+                                        seam_z_angle_deg += 360.;
+                                    }
                                     egui::Slider::new(&mut seam_z_angle_deg, 0.0_f32..=360.).ui(ui);
                                     ui.end_row();
+                                    if seam_z_angle_deg > 180. {
+                                        seam_z_angle_deg -= 360.;
+                                    }
                                     selected_pitch_parameters.0.seam_z_angle =
                                         seam_z_angle_deg.to_radians();
                                 });

@@ -25,3 +25,10 @@ pub(crate) fn active_batter_changed(
         });
     }
 }
+
+#[derive(Debug, Default, States, Hash, Eq, PartialEq, Clone, Copy)]
+pub(crate) enum BullpenSceneGameMode {
+    #[default]
+    Pitcher,
+    Batter,
+}

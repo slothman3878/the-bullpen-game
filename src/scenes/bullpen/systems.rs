@@ -20,7 +20,10 @@ pub(crate) fn _spawn_camera(mut commands: Commands) {
 }
 
 pub(crate) fn swap_camera(
-    mut pitcher_camera_camera: Query<&mut ThirdPersonCamera, With<PitcherCameraMarker>>,
+    game_mode: Res<State<BullpenSceneGameMode>>,
+    mut next_game_mode: ResMut<NextState<BullpenSceneGameMode>>,
+    mut pitcher_camera_camera: Query<(Entity, &mut ThirdPersonCamera), With<PitcherCameraMarker>>,
+    batter_camera_camera: Query<Entity, With<BatterCameraMarker>>,
     mut camera_query: Query<
         &mut Camera,
         Or<(
@@ -30,14 +33,35 @@ pub(crate) fn swap_camera(
         )>,
     >,
 ) {
-    for mut camera in pitcher_camera_camera.iter_mut() {
-        camera.cursor_lock_active = !camera.cursor_lock_active;
-        camera.cursor_lock_toggle_enabled = !camera.cursor_lock_toggle_enabled;
+    info!("swap camera {:?}", game_mode.get());
+    let (pitcher_camera_entity, mut pitcher_aim) = pitcher_camera_camera.single_mut();
+    let batter_camera_entity = batter_camera_camera.single();
+    let [mut pitcher_camera, mut batter_camera] = camera_query
+        .get_many_mut([pitcher_camera_entity, batter_camera_entity])
+        .unwrap();
+    info!("pitcher camera {:?}", pitcher_camera.is_active);
+    info!("batter camera {:?}", batter_camera.is_active);
+    info!(
+        "pitcher aim {:?} {:?}",
+        pitcher_aim.cursor_lock_active, pitcher_aim.cursor_lock_toggle_enabled
+    );
+    match game_mode.get() {
+        BullpenSceneGameMode::Batter => {
+            // pitcher_aim.cursor_lock_active = true;
+            // pitcher_aim.cursor_lock_toggle_enabled = false;
+            pitcher_camera.is_active = true;
+            batter_camera.is_active = false;
+            next_game_mode.set(BullpenSceneGameMode::Pitcher);
+        }
+        BullpenSceneGameMode::Pitcher => {
+            // pitcher_aim.cursor_lock_active = false;
+            // pitcher_aim.cursor_lock_toggle_enabled = true;
+            pitcher_camera.is_active = false;
+            batter_camera.is_active = true;
+            next_game_mode.set(BullpenSceneGameMode::Batter);
+        }
     }
-    //
-    for mut camera in camera_query.iter_mut() {
-        camera.is_active = !camera.is_active;
-    }
+    info!("camera swapped {:?}", game_mode.get());
 }
 
 #[derive(Debug, Component, Reflect)]
@@ -268,10 +292,10 @@ pub(crate) fn launch_ball(
             spin_efficiency,
             speed,
             spin_rate,
-            seam_z_angle,
             tilt,
             direction,
             seam_y_angle,
+            seam_z_angle,
         } = selected_pitch_parameters.0;
 
         let spin =

@@ -42,7 +42,11 @@ bevy_third_person_camera = "0.1.11"
 bevy-rapier-baseball-flight = { path = "../016-bevy-rapier-baseball-flight/bevy-rapier-baseball-flight" } #"0.0.1-alpha.4"
 bevy_rapier3d = "0.27.0"
 bevy_dolly = { version = "0.0.4" }
-bevy_egui = "0.30"
+bevy_egui = { version = "0.30", default-features = false, features = [
+  "default_fonts",
+  "render",
+  "serde",
+] }
 
 [dev-dependencies]
 bevy-inspector-egui = "^0.25.1"
@@ -52,3 +56,9 @@ opt-level = 1
 
 [profile.dev.package."*"]
 opt-level = 3
+
+[build]
+rustflags = ["--cfg=web_sys_unstable_apis"]
+
+[target.wasm32-unknown-unknown]
+runner = "wasm-server-runner"
