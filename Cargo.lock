@@ -1392,6 +1392,7 @@ dependencies = [
 [[package]]
 name = "blenvy-extensions"
 version = "0.0.1"
+source = "git+https://github.com/slothman3878/blenvy-extensions/#af610bba70f5741fdeb40a106b69f6efdc10a5b3"
 dependencies = [
  "bevy",
  "bevy_rapier3d",
