@@ -3699,11 +3699,6 @@
       "isResource": false,
       "long_name": "bevy_egui::EguiSettings",
       "properties": {
-        "default_open_url_target": {
-          "type": {
-            "$ref": "#/$defs/core::option::Option<alloc::string::String>"
-          }
-        },
         "run_manually": {
           "type": {
             "$ref": "#/$defs/bool"
