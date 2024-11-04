@@ -4,14 +4,15 @@ version = "0.0.1"
 edition = "2021"
 
 [dependencies]
-bevy = { version = "^0.14.0", default-features = false, features = [
-  # "dynamic_linking",
+bevy = { version = "^0.14.0", default-features = true, features = [
+  "dynamic_linking",
   "bevy_state",
   "bevy_asset",
   "bevy_color",
   "bevy_pbr",
   "bevy_scene",
   "x11",
+  "webgl2",
   "tonemapping_luts",
 
   # Core
