@@ -7,27 +7,49 @@ mod scenes;
 mod strikezone;
 
 use crate::prelude::*;
+use bevy::asset::AssetMetaCheck;
 use bevy_third_person_camera::ThirdPersonCameraPlugin;
 
-const WINDOW_WIDTH: f32 = 1920.0;
-const WINDOW_HEIGHT: f32 = 1024.0;
+// const WINDOW_WIDTH: f32 = 1920.0;
+// const WINDOW_HEIGHT: f32 = 1024.0;
 
 fn main() {
     let mut app = App::new();
 
-    app.add_plugins(DefaultPlugins.set(WindowPlugin {
-        primary_window: Some(Window {
-            title: "The Bullpen".to_string(),
-            resolution: WindowResolution::new(WINDOW_WIDTH, WINDOW_HEIGHT),
-            resizable: false,
-            cursor: Cursor {
-                grab_mode: CursorGrabMode::Locked,
+    // app.add_plugins(DefaultPlugins.set(WindowPlugin {
+    //     primary_window: Some(Window {
+    //         title: "The Bullpen".to_string(),
+    //         resolution: WindowResolution::new(WINDOW_WIDTH, WINDOW_HEIGHT),
+    //         resizable: false,
+    //         cursor: Cursor {
+    //             grab_mode: CursorGrabMode::Locked,
+    //             ..default()
+    //         },
+    //         ..Default::default()
+    //     }),
+    //     ..Default::default()
+    // }));
+    app.add_plugins(
+        DefaultPlugins
+            .set(AssetPlugin {
+                // Wasm builds will check for meta files (that don't exist) if this isn't set.
+                // This causes errors and even panics on web build on itch.
+                // See https://github.com/bevyengine/bevy_github_ci_template/issues/48.
+                meta_check: AssetMetaCheck::Never,
                 ..default()
-            },
-            ..Default::default()
-        }),
-        ..Default::default()
-    }));
+            })
+            .set(WindowPlugin {
+                primary_window: Window {
+                    title: "The Bullpen".to_string(),
+                    canvas: Some("#bevy".to_string()),
+                    fit_canvas_to_parent: true,
+                    prevent_default_event_handling: true,
+                    ..default()
+                }
+                .into(),
+                ..default()
+            }),
+    );
 
     app.add_plugins(MaterialPlugin::<LineMaterial>::default());
 
