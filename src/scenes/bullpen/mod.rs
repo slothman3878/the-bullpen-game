@@ -85,6 +85,10 @@ impl Plugin for BullpenScene {
             )
                 .in_set(GameScenesSet::UpdateSet(*self)),
         )
+        .add_systems(
+            Update,
+            toggle_menu_visibility.in_set(GameScenesSet::UpdateSet(*self)),
+        )
         // menu systems
         .add_systems(
             Update,
@@ -95,7 +99,6 @@ impl Plugin for BullpenScene {
                 )
                     .run_if(menu_visibility_is(true)),
                 (
-                    toggle_menu_visibility,
                     third_person_camera_lock_status, //
                 )
                     .chain()

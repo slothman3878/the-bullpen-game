@@ -22,15 +22,15 @@ pub(crate) fn menu_visibility_is(visibility: bool) -> impl FnMut(Res<MenuState>)
 
 pub(crate) fn toggle_menu_visibility(
     mut menu_visibility: ResMut<MenuState>,
-    primary_window: Query<&Window, With<PrimaryWindow>>,
+    primary_window: Query<&Window, (With<PrimaryWindow>, Changed<Window>)>,
 ) {
     if let Ok(window) = primary_window.get_single() {
         match window.cursor.grab_mode {
             CursorGrabMode::None => {
-                menu_visibility.visibility = false;
+                menu_visibility.visibility = true;
             }
             _ => {
-                menu_visibility.visibility = true;
+                menu_visibility.visibility = false;
             }
         }
     }
