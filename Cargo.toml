@@ -4,29 +4,7 @@ version = "0.0.1"
 edition = "2021"
 
 [dependencies]
-bevy = { version = "^0.14.0", default-features = true, features = [
-  "dynamic_linking",
-  "bevy_state",
-  "bevy_asset",
-  "bevy_color",
-  "bevy_pbr",
-  "bevy_scene",
-  "x11",
-  "webgl2",
-  "tonemapping_luts",
-
-  # Core
-  "bevy_core_pipeline",
-  "multi_threaded",
-  "bevy_winit",
-  "bevy_audio",
-  "bevy_sprite",
-  "bevy_text",
-
-  # Core formats
-  "vorbis",
-  "png",
-] }
+bevy = { version = "^0.14.0", default-features = true }
 # glam = { version = "^0.27.0", features = ["glam-assert"] }
 bevy_flycam = "^0.14.1"
 blenvy = { git = "https://github.com/kaosat-dev/Blenvy/", branch = "blenvy", version = "^0.1.0-alpha.1" }

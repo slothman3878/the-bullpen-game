@@ -10,25 +10,29 @@ use crate::prelude::*;
 use bevy::asset::AssetMetaCheck;
 use bevy_third_person_camera::ThirdPersonCameraPlugin;
 
-// const WINDOW_WIDTH: f32 = 1920.0;
-// const WINDOW_HEIGHT: f32 = 1024.0;
+const WINDOW_WIDTH: f32 = 1920.0;
+const WINDOW_HEIGHT: f32 = 1024.0;
 
 fn main() {
     let mut app = App::new();
 
-    // app.add_plugins(DefaultPlugins.set(WindowPlugin {
-    //     primary_window: Some(Window {
-    //         title: "The Bullpen".to_string(),
-    //         resolution: WindowResolution::new(WINDOW_WIDTH, WINDOW_HEIGHT),
-    //         resizable: false,
-    //         cursor: Cursor {
-    //             grab_mode: CursorGrabMode::Locked,
-    //             ..default()
-    //         },
+    // #[cfg(target_family = "windows")]
+    // {
+    //     app.add_plugins(DefaultPlugins.set(WindowPlugin {
+    //         primary_window: Some(Window {
+    //             title: "The Bullpen".to_string(),
+    //             resolution: WindowResolution::new(WINDOW_WIDTH, WINDOW_HEIGHT),
+    //             resizable: false,
+    //             cursor: Cursor {
+    //                 grab_mode: CursorGrabMode::Locked,
+    //                 ..default()
+    //             },
+    //             ..Default::default()
+    //         }),
     //         ..Default::default()
-    //     }),
-    //     ..Default::default()
-    // }));
+    //     }));
+    // }
+
     app.add_plugins(
         DefaultPlugins
             .set(AssetPlugin {
@@ -41,9 +45,12 @@ fn main() {
             .set(WindowPlugin {
                 primary_window: Window {
                     title: "The Bullpen".to_string(),
-                    canvas: Some("#bevy".to_string()),
                     fit_canvas_to_parent: true,
                     prevent_default_event_handling: true,
+                    cursor: Cursor {
+                        grab_mode: CursorGrabMode::Locked,
+                        ..default()
+                    },
                     ..default()
                 }
                 .into(),
