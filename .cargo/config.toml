@@ -12,9 +12,13 @@ rustflags = []
 rustflags = []
 
 [target.x86_64-pc-windows-msvc]
-linker = "rust-lld.exe"
-rustdocflags = ["-Clinker=rust-lld.exe"]
-rustflags = ["-Zshare-generics=n", "-Zthreads=0"]
+# linker = "rust-lld.exe"
+# rustdocflags = ["-Clinker=rust-lld.exe"]
+rustflags = [
+  "-Zshare-generics=n",
+  "-Zthreads=0",
+  "-Ctarget-feature=+crt-static",
+]
 
 [alias]
 ci = "run --package ci --"

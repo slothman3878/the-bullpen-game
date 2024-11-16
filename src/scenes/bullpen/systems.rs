@@ -47,14 +47,14 @@ pub(crate) fn swap_camera(
     );
     match game_mode.get() {
         BullpenSceneGameMode::Batter => {
-            // pitcher_aim.cursor_lock_active = true;
+            pitcher_aim.cursor_lock_active = true;
             // pitcher_aim.cursor_lock_toggle_enabled = false;
             pitcher_camera.is_active = true;
             batter_camera.is_active = false;
             next_game_mode.set(BullpenSceneGameMode::Pitcher);
         }
         BullpenSceneGameMode::Pitcher => {
-            // pitcher_aim.cursor_lock_active = false;
+            pitcher_aim.cursor_lock_active = false;
             // pitcher_aim.cursor_lock_toggle_enabled = true;
             pitcher_camera.is_active = false;
             batter_camera.is_active = true;
